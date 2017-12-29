@@ -57,3 +57,7 @@ typings/
 # dotenv environment variables file
 .env
 
+*.xcuserstate
+*.xcworkspacedata
+ios/RHDVision.xcodeproj/xcuserdata/ray.xcuserdatad/xcschemes/xcschememanagement.plist
+*.lock

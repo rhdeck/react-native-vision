@@ -1,0 +1,22 @@
+{
+  "name": "react-native-vision",
+  "version": "1.0.0",
+  "description": "React Native module for enhanced camera and vision in iOS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhdeck/react-native-vision.git"
+  },
+  "author": "Ray Deck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhdeck/react-native-vision/issues"
+  },
+  "homepage": "https://github.com/rhdeck/react-native-vision#readme",
+  "dependencies": {
+    "react": "^16.2.0"
+  }
+}
