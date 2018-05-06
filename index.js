@@ -1,7 +1,7 @@
 import { requireNativeComponent, NativeModules } from "react-native";
 import React, { Component } from "react";
 
-const NativeVision = requireNativeComponent("RHDVision", RNVision);
+const NativeVision = requireNativeComponent("RHDVisionView", RNVision);
 
 class RNVision extends Component {
   constructor(props) {
