@@ -1,14 +1,14 @@
 import AVKit
-@objc(RHDVision)
-class RHDVisionManager: RCTViewManager {
+@objc(RHDVisionViewManager)
+class RHDVisionViewManager: RCTViewManager {
     static var currentView: RHDVisionView?
     override func view() -> UIView {
-        if let v = RHDVisionManager.currentView {
+        if let v = RHDVisionViewManager.currentView {
             v.cancel()
-            RHDVisionManager.currentView = nil
+            RHDVisionViewManager.currentView = nil
         }
         let v = RHDVisionView()
-        RHDVisionManager.currentView = v
+        RHDVisionViewManager.currentView = v
         v.manager = self
         return v
     }
