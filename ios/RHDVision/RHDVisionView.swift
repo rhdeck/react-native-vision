@@ -3,20 +3,25 @@ import AVKit
 @objc(RHDVisionView)
 class RHDVisionView: UIView {
     var pl:AVCaptureVideoPreviewLayer?
-    var manager: RHDVisionManager?
-    var onStart: RCTBubblingEventBlock?
-    func setCameraFront(_ isFront: Bool) {
-        AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { success in
-            guard success else { return }
-            guard
-                let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInWideAngleCamera, mediaType: AVMediaTypeVideo, position: isFront ? AVCaptureDevice.Position.front : AVCaptureDevice.Position.back),
-                let input = try? AVCaptureDeviceInput(device: device)
-                else { return }
-            let s = AVCaptureSession()
-            s.addInput(input)
-            s.startRunning()
-            guard let pl = AVCaptureVideoPreviewLayer(session: s)  else { return }
-            self.addPreviewLayer(pl)
+    var manager: RHDVisionViewManager?
+    @objc var onStart: RCTBubblingEventBlock?
+    var _cameraFront: Bool = false
+    @objc var cameraFront:Bool {
+        get { return _cameraFront}
+        set(isFront) {
+            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { success in
+                guard success else { return }
+                guard
+                    let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInWideAngleCamera, mediaType: AVMediaTypeVideo, position: isFront ? AVCaptureDevice.Position.front : AVCaptureDevice.Position.back),
+                    let input = try? AVCaptureDeviceInput(device: device)
+                    else { return }
+                let s = AVCaptureSession()
+                s.addInput(input)
+                s.startRunning()
+                guard let pl = AVCaptureVideoPreviewLayer(session: s)  else { return }
+                self.addPreviewLayer(pl)
+                
+            }
         }
     }
     func addPreviewLayer(_ pl: AVCaptureVideoPreviewLayer?) {
