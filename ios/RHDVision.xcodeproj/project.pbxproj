@@ -8,10 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		71BBE5711FEE99600085603D /* RHDVisionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */; };
-		71BBE5731FEEB6810085603D /* RHDVisionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 71BBE5721FEEB6810085603D /* RHDVisionDelegate.m */; };
-		71D017FD1FED85D600939074 /* RHDVision.m in Sources */ = {isa = PBXBuildFile; fileRef = 71D017FC1FED85D600939074 /* RHDVision.m */; };
-		71D018061FED85F600939074 /* RHDVision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D018051FED85F600939074 /* RHDVision.swift */; };
+		71D018061FED85F600939074 /* RHDVisionViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D018051FED85F600939074 /* RHDVisionViewManager.swift */; };
 		71D018381FED8A5A00939074 /* RHDVisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D018371FED8A5A00939074 /* RHDVisionView.swift */; };
+		E36AA68C8B1D4C0DB395FB12 /* rn-swift-bridge.m in Sources */ = {isa = PBXBuildFile; fileRef = AAC91471FCBB43E18A0037E9 /* rn-swift-bridge.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,12 +27,11 @@
 
 /* Begin PBXFileReference section */
 		71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionDelegate.swift; sourceTree = "<group>"; };
-		71BBE5721FEEB6810085603D /* RHDVisionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RHDVisionDelegate.m; sourceTree = "<group>"; };
 		71D017F81FED85D600939074 /* libRHDVision.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRHDVision.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		71D017FC1FED85D600939074 /* RHDVision.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RHDVision.m; sourceTree = "<group>"; };
 		71D018041FED85F600939074 /* RHDVision-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RHDVision-Bridging-Header.h"; sourceTree = "<group>"; };
-		71D018051FED85F600939074 /* RHDVision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVision.swift; sourceTree = "<group>"; };
+		71D018051FED85F600939074 /* RHDVisionViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionViewManager.swift; sourceTree = "<group>"; };
 		71D018371FED8A5A00939074 /* RHDVisionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionView.swift; sourceTree = "<group>"; };
+		AAC91471FCBB43E18A0037E9 /* rn-swift-bridge.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = "rn-swift-bridge.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +50,7 @@
 			children = (
 				71D017FA1FED85D600939074 /* RHDVision */,
 				71D017F91FED85D600939074 /* Products */,
+				71F4EEE9209E82F100997296 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,14 +65,20 @@
 		71D017FA1FED85D600939074 /* RHDVision */ = {
 			isa = PBXGroup;
 			children = (
-				71D017FC1FED85D600939074 /* RHDVision.m */,
-				71D018051FED85F600939074 /* RHDVision.swift */,
+				71D018051FED85F600939074 /* RHDVisionViewManager.swift */,
 				71D018041FED85F600939074 /* RHDVision-Bridging-Header.h */,
 				71D018371FED8A5A00939074 /* RHDVisionView.swift */,
 				71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */,
-				71BBE5721FEEB6810085603D /* RHDVisionDelegate.m */,
 			);
 			path = RHDVision;
+			sourceTree = "<group>";
+		};
+		71F4EEE9209E82F100997296 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				AAC91471FCBB43E18A0037E9 /* rn-swift-bridge.m */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,12 +107,12 @@
 		71D017F01FED85D600939074 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 920;
 				ORGANIZATIONNAME = "Ray Deck";
 				TargetAttributes = {
 					71D017F71FED85D600939074 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 0920;
+						LastSwiftMigration = 920;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -134,11 +139,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71BBE5731FEEB6810085603D /* RHDVisionDelegate.m in Sources */,
-				71D018061FED85F600939074 /* RHDVision.swift in Sources */,
-				71D017FD1FED85D600939074 /* RHDVision.m in Sources */,
+				71D018061FED85F600939074 /* RHDVisionViewManager.swift in Sources */,
 				71D018381FED8A5A00939074 /* RHDVisionView.swift in Sources */,
 				71BBE5711FEE99600085603D /* RHDVisionDelegate.swift in Sources */,
+				E36AA68C8B1D4C0DB395FB12 /* rn-swift-bridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
