@@ -4,7 +4,9 @@
   "description": "React Native module for enhanced camera and vision in iOS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bridge": "react-native-swift-bridge",
+    "watch": "react-native-swift-bridge --watch"
   },
   "repository": {
     "type": "git",
@@ -17,6 +19,11 @@
   },
   "homepage": "https://github.com/rhdeck/react-native-vision#readme",
   "dependencies": {
-    "react": "^16.2.0"
+    "react": "^16.3.2",
+    "react-native-swift": "^1.2.0"
+  },
+  "isSwift": true,
+  "devDependencies": {
+    "react-native-swift-bridge": "^2.1.0"
   }
 }
