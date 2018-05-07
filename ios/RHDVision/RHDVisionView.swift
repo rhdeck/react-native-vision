@@ -43,4 +43,14 @@ class RHDVisionView: UIView {
             manager.closedView(self)
         }
     }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if let c = pl?.connection {
+            if c.isVideoOrientationSupported {
+                c.videoOrientation = deviceOrientationtoAVOrientation(UIDevice.current.orientation)
+                print("Hello " + String(c.videoOrientation.rawValue))
+            }
+        }
+        pl?.frame = self.bounds
+    }
 }
