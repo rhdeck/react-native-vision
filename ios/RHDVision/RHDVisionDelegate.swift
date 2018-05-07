@@ -8,18 +8,22 @@ typealias VNRGenerator = ()->VNRequest?
 // Don't know if I want this typealias VNReqMaker = () -> VNRequest
 @objc(RHDVisionModule)
 class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
-    var sr:[String:VNRequest] = [:]
+    //MARK: Private Collections
+    var sr:[String:VNRequest] = [:] //Sequence Requests
+    var srg:[String:VNRGenerator] = [:] // Sequence Request Generators
     var srobs:[String:VNDetectedObjectObservation] = [:]
-    var ir:[String:VNRequest] = [:]
-    var srg:[String:VNRGenerator] = [:]
-    var irg:[String:VNRGenerator] = [:]
+    var ir:[String:VNRequest] = [:] // Image Requests
+    var irg:[String:VNRGenerator] = [:] // Image Request Generators
     var sf: [String: SFCallback] = [:]
+    //MARK: Private Properties
     var pl:AVCaptureVideoPreviewLayer?
     var connection: AVCaptureConnection?
     var srh = VNSequenceRequestHandler()
+    //MARK: Private Methods
     func resetSRH() {
         srh = VNSequenceRequestHandler()
     }
+    //MARK:Delegate Methods
     func captureOutput(_ output: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         self.connection = connection
         guard sr.count > 0
@@ -71,6 +75,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             }
         }
     }
+    //MARK: SaveFrame Code
     func addSaveFrameHandler(handler: @escaping SFCallback) -> String {
         return addSaveFrameHandler(label: nil, handler: handler)
     }
@@ -85,7 +90,6 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     func getSaveFrameHandler(label: String) -> SFCallback? {
         return sf[label]
     }
-    
     let defaultDisposition:String = "file"
     var savedFrame:UIImage?
     @objc func saveFrame(_ disposition: String?, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
@@ -132,6 +136,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             }
         }
     }
+    //MARK:Face Detection
     @objc func detectFaces(_ resolve:@escaping RCTPromiseResolveBlock, reject:@escaping RCTPromiseRejectBlock) {
         guard ir["detectFaces"] == nil else { reject("Already running detect faces", nil,nil); return}
         ir["detectFaces"] = VNDetectFaceRectanglesRequest() { request, error in
@@ -150,6 +155,12 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             resolve(data)
         }
     }
+    @objc func removeDetectFaces(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        guard let _ = ir["detectFaces"]  else { reject("Already running detect faces", nil,nil); return}
+        ir.removeValue(forKey: "detectFaces")
+        resolve(true)
+    }
+    //MARK: Object Tracking
     @objc func trackObject(_ name: String, dict: [String: Any], resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         if let r = dictionaryToRect(dict) {
             if(trackObject(name, rect: r)) {
@@ -190,6 +201,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         srg[name] = rg
         return true
     }
+    //MARK: CoreML Model Application
     @objc func applyML(_ thisURL: String, resolve:RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) {
         guard let modelURL = URL(string: thisURL) else { return }
         do {
@@ -205,6 +217,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             reject(nil, nil, error)
         }
     }
+    //MARK: Metadata Capture
     func captureOutput(_ output: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
         metadataObjects.forEach() {obj in
             if let ro = obj as? AVMetadataMachineReadableCodeObject {
@@ -216,14 +229,16 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     func foundMetaData(_ stringValue:String) {
         sendEvent(withName: "foundMetaData", body:["string": "stringValue"])
     }
+    //MARK: RCTEventEmitter Support
     override func supportedEvents() -> [String]! {
         return [
             "foundMetaData",
             "trackedObject"
         ]
     }
+    //MARK: Lifecycle management
     @objc func attach() {
-        if let pl = RHDVisionManager.currentView?.pl {
+        if let pl = RHDVisionViewManager.currentView?.pl {
             attachPL(previewLayer: pl)
         }
     }
@@ -246,15 +261,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             conn.videoOrientation = deviceOrientationtoAVOrientation(UIDevice.current.orientation)
         }
     }
-    func deviceOrientationtoAVOrientation(_ uiorientation:UIDeviceOrientation) -> AVCaptureVideoOrientation {
-        switch uiorientation {
-            case .landscapeLeft: return .landscapeLeft
-            case .landscapeRight: return .landscapeRight
-            case .portrait: return .portrait
-            case .portraitUpsideDown:  return .portraitUpsideDown
-            default: return .portrait
-        }
-    }
+    //MARK: Rectangle Conversion
     func visionRectToNormal(_ visionRect: CGRect)->CGRect {
         var newRect = visionRect
         newRect.origin.y = 1 - visionRect.origin.y - visionRect.size.height
@@ -407,6 +414,32 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             width: outerRect.size.width / innerRect.size.width,
             height: outerRect.size.height / innerRect.size.height
         )
+    }
+    
+}
+func deviceOrientationtoAVOrientation(_ uiorientation:UIDeviceOrientation) -> AVCaptureVideoOrientation {
+    switch uiorientation {
+    case .landscapeLeft:
+        return .landscapeRight //Note left and right get flipped
+    case .landscapeRight:
+        return .landscapeLeft //Note Left and Right get flipped
+    case .portrait:
+        return .portrait
+    case .portraitUpsideDown:
+        return .portraitUpsideDown
+    case .unknown:
+        return .portrait
+    default:
+        return .portrait
+    }
+}
+
+func AVOrientationToDeviceOrientation(_ avorientation:AVCaptureVideoOrientation) -> UIDeviceOrientation {
+    switch avorientation {
+    case .landscapeLeft: return .landscapeLeft
+    case .landscapeRight: return .landscapeRight
+    case .portrait: return .portrait
+    case .portraitUpsideDown: return .portraitUpsideDown
     }
     
 }
