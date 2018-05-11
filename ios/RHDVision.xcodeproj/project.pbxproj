@@ -5,8 +5,9 @@
 	};
 	objectVersion = 48;
 	objects = {
-
 /* Begin PBXBuildFile section */
+		7172008220A276FB00DEACEB /* RHDVisionImageViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7172008120A276FB00DEACEB /* RHDVisionImageViewManager.swift */; };
+		7172008420A2770A00DEACEB /* RHDVisionImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7172008320A2770A00DEACEB /* RHDVisionImageView.swift */; };
 		71BBE5711FEE99600085603D /* RHDVisionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */; };
 		71D018061FED85F600939074 /* RHDVisionViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D018051FED85F600939074 /* RHDVisionViewManager.swift */; };
 		71D018381FED8A5A00939074 /* RHDVisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D018371FED8A5A00939074 /* RHDVisionView.swift */; };
@@ -26,6 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7172008120A276FB00DEACEB /* RHDVisionImageViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionImageViewManager.swift; sourceTree = "<group>"; };
+		7172008320A2770A00DEACEB /* RHDVisionImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionImageView.swift; sourceTree = "<group>"; };
 		71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RHDVisionDelegate.swift; sourceTree = "<group>"; };
 		71D017F81FED85D600939074 /* libRHDVision.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRHDVision.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		71D018041FED85F600939074 /* RHDVision-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RHDVision-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -69,6 +72,8 @@
 				71D018041FED85F600939074 /* RHDVision-Bridging-Header.h */,
 				71D018371FED8A5A00939074 /* RHDVisionView.swift */,
 				71BBE5701FEE99600085603D /* RHDVisionDelegate.swift */,
+				7172008120A276FB00DEACEB /* RHDVisionImageViewManager.swift */,
+				7172008320A2770A00DEACEB /* RHDVisionImageView.swift */,
 			);
 			path = RHDVision;
 			sourceTree = "<group>";
@@ -139,6 +144,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7172008220A276FB00DEACEB /* RHDVisionImageViewManager.swift in Sources */,
+				7172008420A2770A00DEACEB /* RHDVisionImageView.swift in Sources */,
 				71D018061FED85F600939074 /* RHDVisionViewManager.swift in Sources */,
 				71D018381FED8A5A00939074 /* RHDVisionView.swift in Sources */,
 				71BBE5711FEE99600085603D /* RHDVisionDelegate.swift in Sources */,

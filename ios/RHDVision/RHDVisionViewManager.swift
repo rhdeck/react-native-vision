@@ -1,21 +1,19 @@
 import AVKit
-@objc(RHDVisionViewManager)
-class RHDVisionViewManager: RCTViewManager {
-    static var currentView: RHDVisionView?
+@objc(RHDVisionCameraViewManager)
+class RHDVisionCameraViewManager: RCTViewManager {
+    static var currentView: RHDVisionCameraView?
     override func view() -> UIView {
-        if let v = RHDVisionViewManager.currentView {
-            v.cancel()
-            RHDVisionViewManager.currentView = nil
+        if let v = RHDVisionCameraViewManager.currentView {
+            v.detach()
+            RHDVisionCameraViewManager.currentView = nil
         }
-        let v = RHDVisionView()
-        RHDVisionViewManager.currentView = v
+        let v = RHDVisionCameraView()
+        RHDVisionCameraViewManager.currentView = v
         v.manager = self
         return v
     }
     override class func requiresMainQueueSetup() -> Bool {
         return false
     }
-    
-   
-    func closedView(_ v:RHDVisionView) {}
+    func closedView(_ v:RHDVisionCameraView) {}
 }
