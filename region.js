@@ -47,7 +47,18 @@ class Region extends Component {
         ret.classifiers = nextProps.classifiers;
       }
     }
-    if (nextProps.bottlenecks != prevState.bottlenecks) return ret;
+    if (nextProps.bottlenecks != prevState.bottlenecks) {
+      //Update bottlenecks - keys are the bottleneck URLS, values are an object of keys generators, generics, classifiers - examine them all
+      nextProps.bottlenecks.forEach((k, v) => {});
+      prevState.bottlenecks.forEach((k, v) => {
+        //Look for no-longer operative bottlenecks and remove them
+        if (typeof nextProps.classifiers[k] == "undefined") {
+          Module.removeML(nextProps.id, k);
+        }
+      });
+      ret.bottlenecks = nextProps.bottlenecks;
+    }
+    return ret;
   }
   render() {
     return (
