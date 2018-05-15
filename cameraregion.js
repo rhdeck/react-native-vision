@@ -36,26 +36,34 @@ const calculateRectangles = data => {
             x: 0,
             y: (1.0 - 1.0 / totalRatio) / 2,
             height: 1.0 / totalRatio,
-            width: 1
+            width: 1,
+            outerX: 0,
+            outerY: 0
           }
         : {
             x: (1.0 - totalRatio) / 2,
             y: 0,
             height: 1,
-            width: totalRatio
+            width: totalRatio,
+            outerX: 0,
+            outerY: 0
           }
       : totalRatio > 1
         ? {
-            x: (1 / totalRatio - 1) / 2,
+            x: 0,
             y: 0,
             height: 1,
-            width: totalRatio
+            width: totalRatio,
+            outerX: (1 / totalRatio - 1) / 2,
+            outerY: 0
           }
         : {
             x: 0,
-            y: (totalRatio - 1) / 2,
+            y: 0,
             height: 1 / totalRatio,
-            width: 1
+            width: 1,
+            outerX: 0,
+            outerY: (totalRatio - 1) / 2
           };
   if (data.isCameraFront) {
     data.originalx = data.x;
@@ -66,10 +74,20 @@ const calculateRectangles = data => {
     width: (data.width / subRectangle.width * 100).toFixed(2) + "%",
     height: (data.height / subRectangle.height * 100).toFixed(2) + "%",
     left:
-      ((data.x / subRectangle.width - subRectangle.x) * 100).toFixed(2) + "%",
+      (
+        ((data.x - subRectangle.x) / subRectangle.width - subRectangle.outerX) *
+        100
+      ).toFixed(2) + "%",
     top:
-      ((data.y - subRectangle.y) / subRectangle.height * 100).toFixed(2) + "%"
+      (
+        ((data.y - subRectangle.y) / subRectangle.height -
+          subRectangle.outerY) *
+        100
+      ).toFixed(2) + "%"
   };
+  console.log("Data x y w h", data.x, data.y, data.width, data.height);
+  console.log("Ratios - i v t", iRatio, vpRatio, totalRatio);
+  console.log("Rect", subRectangle, style);
   return style;
 };
 CameraRegion.propTypes = {
