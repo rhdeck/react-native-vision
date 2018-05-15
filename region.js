@@ -19,26 +19,37 @@ class Region extends Component {
         JSON.stringify(nextProps.classifiers) !=
         JSON.stringify(prevState.classifiers)
       ) {
-        nextProps.classifiers.forEach((k, maxCount) => {
-          if (prevState.classifiers[k] && prevState.classifiers[k] == maxCount)
-            return;
-          Module.applyMLClassifier(
-            nextProps.id,
-            nextProps.id,
-            k,
-            v,
-            newClassifications => {
-              this.setState(({ classifications }) => {
-                return {
-                  classifications: { ...classifications, k: newClassifications }
-                };
-              });
-            }
-          );
-        });
-        prevState.classifiers.forEach((k, maxCount) => {
-          if (typeof nextProps.classifiers[k] == "undefined") {
-            Module.removeML(nextProps.id, k);
+        if (nextProps.classifiers)
+          Object.keys(nextProps.classifiers).forEach(k => {
+            const maxCount = nextProps.classifiers[k];
+            if (
+              prevState.classifiers[k] &&
+              prevState.classifiers[k] == maxCount
+            )
+              return;
+            Module.applyMLClassifier(
+              nextProps.region,
+              nextProps.region,
+              k,
+              maxCount,
+              newClassifications => {
+                this.setState(({ classifications }) => {
+                  return {
+                    classifications: {
+                      ...classifications,
+                      k: newClassifications
+                    }
+                  };
+                });
+              }
+            );
+          });
+        Object.keys(prevState.classifiers).forEach(k => {
+          if (
+            !nextProps.classifiers ||
+            typeof nextProps.classifiers[k] == "undefined"
+          ) {
+            Module.removeML(nextProps.region, k);
             this.setState(({ classifications }) => {
               return { ...classifications, k: null };
             });
@@ -49,8 +60,12 @@ class Region extends Component {
     }
     if (nextProps.bottlenecks != prevState.bottlenecks) {
       //Update bottlenecks - keys are the bottleneck URLS, values are an object of keys generators, generics, classifiers - examine them all
-      nextProps.bottlenecks.forEach((k, v) => {});
-      prevState.bottlenecks.forEach((k, v) => {
+      if (nextProps.bottlenecks)
+        Object.keys(nextProps.bottlenecks).forEach(k => {
+          //@TODO MUST ACTUALLY CREATE BOTTLENECK SUPPORT
+          const v = nextProps.bottlenecks[k];
+        });
+      Object.keys(prevState.bottlenecks).forEach(k => {
         //Look for no-longer operative bottlenecks and remove them
         if (typeof nextProps.classifiers[k] == "undefined") {
           Module.removeML(nextProps.id, k);
@@ -64,10 +79,12 @@ class Region extends Component {
     return (
       <Consumer>
         {value => {
-          const region = value.regions[id];
+          if (!value) return;
+          const region = value.regions[this.props.region];
           const regionInfo = {
             ...region,
-            region: id,
+            imageDimensions: value.imageDimensions,
+            isCameraFront: value.isCameraFront,
             classifications: this.state.classifications,
             genericResults: this.state.genericResults
           };
@@ -78,11 +95,11 @@ class Region extends Component {
   }
 }
 Region.propTypes = {
-  id: PropTypes.string.isRequired,
-  classifiers: PropTypes.array.optional,
-  generators: PropTypes.array.optional,
-  generics: PropTypes.array.optional,
-  bottlenecks: PropTypes.object.optional,
+  region: PropTypes.string.isRequired,
+  classifiers: PropTypes.array,
+  generators: PropTypes.array,
+  generics: PropTypes.array,
+  bottlenecks: PropTypes.object,
   children: PropTypes.func.isRequired
 };
 export default Region;
