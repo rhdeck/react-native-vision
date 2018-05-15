@@ -13,6 +13,7 @@ struct ModelStruct {
 enum visionErrors:Error {
    case NoModelError
 }
+var session:AVCaptureSession?
 // Don't know if I want this typealias VNReqMaker = () -> VNRequest
 @objc(RHDVisionModule)
 class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
@@ -28,9 +29,10 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     var regions: [String: CGRect] = [:] // Identified regions, organized as relative position. Note that "" is reserved for the whole visible field
     //MARK: Private Properties
     var pl:AVCaptureVideoPreviewLayer?
-    var plGravity: String = AVLayerVideoGravityResizeAspectFill
     var connection: AVCaptureConnection?
     var srh = VNSequenceRequestHandler()
+    var imageHeight = 0
+    var imageWidth = 0
     var doAttachCamera = false
     //MARK: Private Methods
     func resetSRH() {
@@ -50,8 +52,11 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         }
         RHDVisionDelegate.instance = self
     }
+    override class func requiresMainQueueSetup() -> Bool {
+        return false
+    }
     //MARK: Lifecycle management
-    var session:AVCaptureSession?
+    
     @objc func start(_ cameraFront: Bool, resolve: RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { success in
             guard success else { reject("no_permission", "Permission denied for Video Capture", nil); return }
@@ -59,10 +64,19 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInWideAngleCamera, mediaType: AVMediaTypeVideo, position: cameraFront ? AVCaptureDevice.Position.front : AVCaptureDevice.Position.back),
                 let input = try? AVCaptureDeviceInput(device: device)
                 else { return }
+            if let olds = session  {
+                olds.inputs.forEach() { i in
+                    olds.removeInput(i as! AVCaptureInput)
+                }
+                olds.outputs.forEach() { o in
+                    olds.removeOutput(o as! AVCaptureOutput)
+                }
+                session = nil
+            }
             let s = AVCaptureSession()
             s.addInput(input)
             s.startRunning()
-            self.session = s
+            session = s
             let o = AVCaptureVideoDataOutput()
             o.setSampleBufferDelegate(self, queue: DispatchQueue(label:"RHDVisionDelegateQueue"))
             o.alwaysDiscardsLateVideoFrames = true
@@ -72,29 +86,30 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 conn.videoOrientation = deviceOrientationtoAVOrientation(UIDevice.current.orientation)
             }
             if(self.doAttachCamera) {
-                RHDVisionCameraViewManager.currentView?.attach(s, gravity: self.plGravity)
+                RHDVisionCameraViewManager.currentView?.attach(s)
             }
         }
     }
     @objc func stop(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         guard let s = session else { resolve(true); return }
         s.stopRunning()
+        s.inputs.forEach() { i in
+            s.removeInput(i as! AVCaptureInput)
+        }
+        s.outputs.forEach() { o in
+            s.removeOutput(o as! AVCaptureOutput)
+        }
         resolve(true)
     }
-    @objc func attachCameraView(_ gravity:String,  resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    @objc func getImageDimensions(_ resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(["height": imageHeight, "width": imageWidth])
+    }
+    @objc func attachCameraView(_ resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         //Look for current vision object
-        switch gravity {
-        case "fill":
-            plGravity = AVLayerVideoGravityResizeAspectFill
-        case "resize":
-            plGravity = AVLayerVideoGravityResizeAspect
-        default:
-            print("Got an invalid gravity value " + gravity)
-        }
         doAttachCamera = true
         guard let view = RHDVisionCameraViewManager.currentView else { reject("no_view", "No view instantiated", nil); return }
         guard let s = session else { resolve(false); return }
-        view.attach(s, gravity: plGravity)
+        view.attach(s)
         resolve(true)
     }
     @objc func detachCameraView(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
@@ -115,14 +130,16 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             || srg.count > 0
             || ir.count > 0
             || irg.count > 0
-            || sf.count > 0,
-            let originalCVP = CMSampleBufferGetImageBuffer(sampleBuffer)
+            || sf.count > 0
+            || imageHeight == 0,
+            let cvp = CMSampleBufferGetImageBuffer(sampleBuffer)
         else { return }
-        let cvp = isCameraView
-            ? cutToPreview(originalCVP)
-            : originalCVP
+        
+        imageHeight = CVPixelBufferGetHeight(cvp)
+        imageWidth  = CVPixelBufferGetWidth(cvp)
         analyzePixelBuffer(cvp, key: "") //Image Analysis as applied to the whole visible region
         regions.forEach() { region, rect in
+            guard let _ = sr[region], let _ = srg[region] , let _ = ir[region], let _ = irg[region], let _ = sf[region] else { return }
             guard let slicedCVP = slicePixelBuffer(cvp, toRect: rect) else { return }
             analyzePixelBuffer(slicedCVP, key: region)
         }
@@ -255,7 +272,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     }
     //MARK:Face Detection
     @objc func detectFaces(_ region: String, resolve: RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) {
-        guard ir[region]?["detectFaces"] == nil else { reject("Already running detect faces", nil,nil); return}
+        guard ir[region]?["detectFaces"] == nil else { resolve("RNVFaceDetected"); return }
         if ir[region] == nil { ir[region] = [:] }
         ir[region]!["detectFaces"] = VNDetectFaceRectanglesRequest() { request, error in
             var data:[Any] = []
@@ -266,14 +283,14 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 let bb = rs.boundingBox
                 let normalRect = visionRectToNormal(bb)
                 data.append(rectToDictionary(normalRect))
-                self.sendEvent(withName: "RNVision", body: ["key": "RNVFaceDetected", "data":data])
+                self.sendEvent(withName: "RNVision", body: ["region": region, "key": "RNVFaceDetected", "data":data])
             }
         }
         resolve("RNVFaceDetected");
     }
-    @objc func removeDetectFaces(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        guard let _ = ir["detectFaces"]  else { reject("Already running detect faces", nil,nil); return}
-        ir.removeValue(forKey: "detectFaces")
+    @objc func removeDetectFaces(_ region: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        guard let _ = ir[region]?["detectFaces"]  else { reject("not_running", "Not running detect faces",nil); return}
+        ir[region]?.removeValue(forKey: "detectFaces")
         resolve(true)
     }
     //MARK: Object Tracking
@@ -290,12 +307,12 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 guard
                     error == nil,
                     let newobs = request.results?.first as? VNDetectedObjectObservation
-                    else { return }
+                    else { print("TO Error", error); return }
                 let newBox = visionRectToNormal(newobs.boundingBox)
                 let oldobsQ = self.srobs[region]![name]
                 self.srobs[region]![name] = newobs
                 guard let oldobs = oldobsQ else { return }
-                guard newobs.boundingBox != oldobs.boundingBox else { return }
+                //guard newobs.boundingBox != oldobs.boundingBox else { return }
                 self.regions[name] = newobs.boundingBox
                 self.sendEvent(withName: "RNVision", body: ["key": name, "region": region, "frame": rectToDictionary(newBox), "confidence": newobs.confidence])
             }
@@ -870,10 +887,10 @@ func  rectToDictionary(_ rect:CGRect) -> [String: Any] {
 }
 func dictionaryToRect(_ dic:[String: Any]) -> CGRect? {
     guard
-        let x = dic["x"] as? Float,
-        let y = dic["y"] as? Float,
-        let height = dic["height"] as? Float,
-        let width = dic["width"] as? Float
+        let x = dic["x"] as? CGFloat,
+        let y = dic["y"] as? CGFloat,
+        let height = dic["height"] as? CGFloat,
+        let width = dic["width"] as? CGFloat
         else { return nil }
-    return CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(width),height: CGFloat(height))
+    return CGRect(x: x, y: y, width: width,height: height)
 }
