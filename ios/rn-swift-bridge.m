@@ -4,12 +4,13 @@
 @interface RCT_EXTERN_MODULE(RHDVisionModule, RCTEventEmitter)
 RCT_EXTERN_METHOD(start:(BOOL)cameraFront resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(stop:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
-RCT_EXTERN_METHOD(attachCameraView:(NSString *)gravity resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
+RCT_EXTERN_METHOD(getImageDimensions:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
+RCT_EXTERN_METHOD(attachCameraView:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(detachCameraView:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(cameraIsView:(BOOL)newIsCameraView resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(saveFrame:(NSString *)disposition region:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(detectFaces:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
-RCT_EXTERN_METHOD(removeDetectFaces:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
+RCT_EXTERN_METHOD(removeDetectFaces:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(trackObject:(NSString *)name region:(NSString *)region dict:(NSDictionary *)dict resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(removeTrackObject:(NSString *)name region:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(removeTrackObjects:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
@@ -32,4 +33,5 @@ RCT_EXTERN_METHOD(saveMultiArraykey:(NSString *)key resolve:(RCTPromiseResolveBl
 RCT_EXPORT_VIEW_PROPERTY(id, NSString *);
 @end
 @interface RCT_EXTERN_MODULE(RHDVisionCameraViewManager, RCTViewManager)
+RCT_EXPORT_VIEW_PROPERTY(gravity, NSString *);
 @end
