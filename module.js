@@ -22,15 +22,14 @@ const masterHandler = body => {
   const key = region + "_" + thisKey;
   if (typeof cachedHandlers[key] == "function") {
     cachedHandlers[key](body);
+  } else {
+    console.log("NO handler for ", key, region, thisKey);
   }
 };
 var cachedHandlers = {};
 const removeListener = (region, key) => {
   const newKey = String(region) + "_" + String(key);
-  delete cachedHandlers(newKey);
-  if (Object.keys(cachedHandlers).length == 0) {
-    if (cachedListener) cachedListener.remove();
-  }
+  delete cachedHandlers[newKey];
 };
 //#endregion
 //#region Lifecycle management
@@ -43,11 +42,14 @@ const stop = async () => {
   cachedEmitter = null;
   return await RNVNative.stop();
 };
-const attachCameraView = async (gravity = "") => {
-  return await RNVNative.attachCameraView(gravity);
+const attachCameraView = async () => {
+  return await RNVNative.attachCameraView();
 };
 const isCameraFrame = async isTrue => {
   return await RNVNative.isCameraView(isTrue);
+};
+const getImageDimensions = async () => {
+  return await RNVNative.getImageDimensions();
 };
 //#endregion
 //#region Save Frame
@@ -69,7 +71,9 @@ const saveFrameOnce = (region, disposition) => {
 var regionFaceKeys = {};
 const detectFaces = async (region, handler) => {
   const key = await RNVNative.detectFaces(region);
-  addListener(region, key, handler);
+  addListener(region, key, body => {
+    return handler(body.data);
+  });
   regionFaceKeys[region] = key;
   return key;
 };
@@ -90,7 +94,7 @@ const detectFacesOnce = region => {
 var boxHandlers = {};
 var boxListener = null;
 const trackObject = async (region, name, boxDictionary, callback) => {
-  if (await RNVNative.trackObject(name, region, boxDictionary)) {
+  if ((await RNVNative.trackObject(name, region, boxDictionary)) !== null) {
     addListener(region, name, callback);
     return true;
   } else return false;
@@ -276,6 +280,39 @@ export {
   stop,
   attachCameraView,
   isCameraFrame,
+  getImageDimensions,
+  saveFrame,
+  saveFrameOnce,
+  detectFaces,
+  detectFacesOnce,
+  removeDetectFaces,
+  trackObject,
+  removeTrackObject,
+  setRegion,
+  removeRegion,
+  applyMLClassifier,
+  applyMLClassifierOnce,
+  applyMLGenerator,
+  applyMLBottleneck,
+  applyMLGeneric,
+  applyMLGenericOnce,
+  applyBottleneckClassifier,
+  applyBottleneckGenerator,
+  applyBottleneckBottleneck,
+  applyBottleneckGeneric,
+  removeML,
+  removeBottleneck,
+  removeBottlenecks,
+  handleMetadata,
+  removeMetadataListener
+};
+export default {
+  REGION_ALL,
+  start,
+  stop,
+  attachCameraView,
+  isCameraFrame,
+  getImageDimensions,
   saveFrame,
   saveFrameOnce,
   detectFaces,
