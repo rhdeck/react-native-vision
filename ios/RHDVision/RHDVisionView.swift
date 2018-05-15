@@ -4,16 +4,22 @@ import AVKit
 class RHDVisionCameraView: UIView {
     var pl:AVCaptureVideoPreviewLayer?
     var manager: RHDVisionCameraViewManager?
-    var gravity:String = AVLayerVideoGravityResizeAspectFill
-    func attach(_ session:AVCaptureSession) {
-        attach(session, gravity: self.gravity)
+    var _gravity:String = AVLayerVideoGravityResizeAspectFill
+    @objc var gravity:String {
+        get {return _gravity == AVLayerVideoGravityResizeAspectFill ? "fill" : "resize"
+        }
+        set(newGravity) {
+            _gravity = newGravity == "fill" ? AVLayerVideoGravityResizeAspectFill : AVLayerVideoGravityResizeAspect
+            if let p = pl {
+                p.videoGravity = _gravity
+            }
+        }
     }
-    func attach(_ session: AVCaptureSession, gravity: String) {
-        self.gravity = gravity
-        guard let pl = AVCaptureVideoPreviewLayer(session: session)  else { return }
+    func attach(_ session: AVCaptureSession) {
         DispatchQueue.main.async(){
+            guard let pl = AVCaptureVideoPreviewLayer(session: session)  else { return }
             pl.frame = self.bounds
-            pl.videoGravity = gravity
+            pl.videoGravity = self._gravity
             self.layer.addSublayer(pl)
             self.pl = pl
         }
