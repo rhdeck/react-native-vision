@@ -23,7 +23,6 @@ CameraRegion = props => {
   );
 };
 const calculateRectangles = data => {
-  console.log(data);
   if (!data.viewPortDimensions) return null;
   const vpRatio =
     data.viewPortDimensions.width / data.viewPortDimensions.height;
@@ -85,9 +84,6 @@ const calculateRectangles = data => {
         100
       ).toFixed(2) + "%"
   };
-  console.log("Data x y w h", data.x, data.y, data.width, data.height);
-  console.log("Ratios - i v t", iRatio, vpRatio, totalRatio);
-  console.log("Rect", subRectangle, style);
   return style;
 };
 CameraRegion.propTypes = {
