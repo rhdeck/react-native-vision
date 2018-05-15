@@ -9,6 +9,7 @@ RCT_EXTERN_METHOD(attachCameraView:(RCTPromiseResolveBlock)resolve reject:(RCTPr
 RCT_EXTERN_METHOD(detachCameraView:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(cameraIsView:(BOOL)newIsCameraView resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(saveFrame:(NSString *)disposition region:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
+RCT_EXTERN_METHOD(removeSaveFrame:(Srtring *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(detectFaces:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(removeDetectFaces:(NSString *)region resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 RCT_EXTERN_METHOD(trackObject:(NSString *)name region:(NSString *)region dict:(NSDictionary *)dict resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);

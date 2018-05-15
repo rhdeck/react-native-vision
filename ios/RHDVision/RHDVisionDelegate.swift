@@ -270,6 +270,10 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         }
         resolve(region)
     }
+    @objc func removeSaveFrame(_ region:Srtring, resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        sf.removeValue(forKey: region)
+        resolve(true)
+    }
     //MARK:Face Detection
     @objc func detectFaces(_ region: String, resolve: RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) {
         guard ir[region]?["detectFaces"] == nil else { resolve("RNVFaceDetected"); return }
