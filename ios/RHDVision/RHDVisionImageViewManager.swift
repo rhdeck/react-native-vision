@@ -12,4 +12,8 @@ class RHDVisionImageViewManager: RCTViewManager {
         i.manager = self
         return i
     }
+    
+    override class func requiresMainQueueSetup() -> Bool {
+        return false
+    }
 }
