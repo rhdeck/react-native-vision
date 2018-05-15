@@ -144,50 +144,6 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             analyzePixelBuffer(slicedCVP, key: region)
         }
     }
-    func cutToPreview(_ source: CVPixelBuffer) -> CVPixelBuffer {
-        guard let v = RHDVisionCameraViewManager.currentView else { return source }
-        let PLSize = v.bounds
-        let PLRatio = PLSize.width / PLSize.height
-        let sourceHeight = CVPixelBufferGetHeight(source)
-        let sourceWidth = CVPixelBufferGetWidth(source)
-        let sourceRatio = CGFloat(sourceWidth) / CGFloat(sourceHeight)
-        guard let gravity = v.pl?.videoGravity else { return source }
-        switch(gravity) {
-        case AVLayerVideoGravityResizeAspectFill:
-            var newWidth: Int
-            var newHeight: Int
-            var newTop: Int
-            var newLeft: Int
-            if PLRatio > sourceRatio {
-                //Width is limiting factor, so we fill to total height
-                newTop = 0
-                newHeight = sourceHeight
-                newWidth = Int(CGFloat(sourceWidth) * sourceRatio / PLRatio)
-                newLeft = (sourceWidth - newWidth) / 2
-            } else {
-                newLeft = 0
-                newWidth = sourceWidth
-                newHeight = Int(CGFloat(sourceHeight) * PLRatio / sourceRatio)
-                newTop = (sourceHeight - newHeight) / 2
-            }
-            return resizePixelBuffer(source, cropX: newLeft, cropY: newTop, cropWidth: newWidth, cropHeight: newHeight, scaleWidth: Int(PLSize.width), scaleHeight: Int(PLSize.height)) ?? source
-        case AVLayerVideoGravityResizeAspect:
-            var newWidth: Int
-            var newHeight: Int
-            if PLRatio  > sourceRatio {
-                //Width is limiting factor
-                newWidth = Int(PLSize.width)
-                newHeight = Int(CGFloat(sourceHeight) * (PLSize.width / CGFloat(sourceWidth)))
-            } else {
-                newHeight = Int(PLSize.height)
-                newWidth = Int(CGFloat(sourceWidth) * (PLSize.height / CGFloat(sourceHeight)))
-            }
-            return resizePixelBuffer(source, cropX: 0, cropY: 0, cropWidth: sourceWidth, cropHeight: sourceHeight, scaleWidth: newWidth, scaleHeight: newHeight) ?? source
-        default:
-            //Do nothing
-            return source
-        }
-    }
     func analyzePixelBuffer(_ cvp: CVPixelBuffer, key: String) {
         var irs:[VNRequest] = []
         if let i = ir[key] {
