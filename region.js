@@ -9,10 +9,21 @@ class Region extends Component {
     generics: {},
     bottlenecks: {},
     classifications: {},
-    genericResults: {}
+    genericResults: {},
+    frameListener: null
   };
   static getDerivedStateFromProps(nextProps, prevState) {
     var ret = prevState;
+    if (prevState.frameListener != nextProps.onFrameCaptured) {
+      if (nextProps.onFrameCaptured) {
+        //Turn it on!
+        Module.saveFrame(nextProps.region, "file", body => {
+          nextProps.onFrameCaptured(body);
+        });
+      } else {
+        Module.removeSaveFrame(nextProps.region);
+      }
+    }
     if (nextProps.classifiers != prevState.classifiers) {
       //compare the two
       if (
@@ -100,6 +111,7 @@ Region.propTypes = {
   generators: PropTypes.array,
   generics: PropTypes.array,
   bottlenecks: PropTypes.object,
-  children: PropTypes.func.isRequired
+  children: PropTypes.func.isRequired,
+  onFrameCaptured: PropTypes.func
 };
 export default Region;
