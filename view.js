@@ -5,8 +5,6 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import Region from "./region";
 const NativeVision = requireNativeComponent("RHDVisionCameraView", RNVision);
-var height = 0;
-var width = 0;
 const { Provider, Consumer: CameraConsumer } = React.createContext();
 class RNVision extends Component {
   state = {
@@ -23,19 +21,23 @@ class RNVision extends Component {
   }
   onLayout(e) {
     const layout = e.nativeEvent.layout;
-    height = layout.height;
-    width = layout.width;
+    this.setState({ height: layout.height, width: layout.width });
   }
   render() {
     return (
-      <View style={this.props.style}>
-        <NativeVision
-          {...{ ...this.props, children: null }}
-          onLayout={this.onLayout}
-        />
+      <View
+        style={this.props.style}
+        onLayout={e => {
+          this.onLayout(e);
+        }}
+      >
+        <NativeVision {...{ ...this.props, children: null }} />
         <Provider
           value={{
-            viewPortDimensions: { height: height, width: width },
+            viewPortDimensions: {
+              height: this.state.height,
+              width: this.state.width
+            },
             viewPortGravity: this.props.gravity
           }}
         >
@@ -44,7 +46,10 @@ class RNVision extends Component {
               {value => {
                 const newValue = {
                   ...value,
-                  viewPortDimensions: { height: height, width: width },
+                  viewPortDimensions: {
+                    height: this.state.height,
+                    width: this.state.width
+                  },
                   viewPortGravity: this.props.gravity
                 };
                 return this.props.children(newValue);
