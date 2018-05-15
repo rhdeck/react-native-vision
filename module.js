@@ -58,11 +58,16 @@ const saveFrame = async (region, disposition, callback) => {
   addListener(region, "saveFrame", callback);
   return await RNVNative.saveFrame(region, disposition);
 };
+const removeSaveFrame = async region => {
+  removeListener(region, "saveFrame");
+  return await RNVNative.removeSaveFrame(region);
+};
 const saveFrameOnce = (region, disposition) => {
   return new Promise((resolve, reject) => {
-    saveFrame(region, disposition, body => {
-      removeListener(region, "saveFrame");
-      resolve(body);
+    saveFrame(region, disposition, async body => {
+      await removeSaveFrame(region);
+
+      return body;
     });
   });
 };
