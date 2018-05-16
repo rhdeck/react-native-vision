@@ -30,14 +30,11 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     //MARK: Private Properties
     var pl:AVCaptureVideoPreviewLayer?
     var connection: AVCaptureConnection?
-    var srh = VNSequenceRequestHandler()
+    var srh:[String: VNSequenceRequestHandler] = [:]
     var imageHeight = 0
     var imageWidth = 0
     var doAttachCamera = false
     //MARK: Private Methods
-    func resetSRH() {
-        srh = VNSequenceRequestHandler()
-    }
     override init() {
         super.init()
         RHDVisionDelegate.instance = self
@@ -140,6 +137,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         analyzePixelBuffer(cvp, key: "") //Image Analysis as applied to the whole visible region
         regions.forEach() { region, rect in
             guard sr[region] != nil || srg[region] != nil || ir[region] != nil ||  irg[region] != nil || sf[region] != nil else { return }
+            print("Slicing to rect", rect)
             guard let slicedCVP = slicePixelBuffer(cvp, toRect: rect) else { return }
             analyzePixelBuffer(slicedCVP, key: region)
         }
@@ -181,8 +179,12 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 if let r = generator() { srs.append(r) }
             }
         }
+        if srh[key] == nil {
+            srh[key] = VNSequenceRequestHandler()
+        }
+        
         if srs.count > 0 {
-            try? srh.perform(srs, on: cvp)
+            try? srh[key]!.perform(srs, on: cvp)
         }
     }
     //MARK: SaveFrame Code
@@ -272,16 +274,17 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 guard
                     error == nil,
                     let newobs = request.results?.first as? VNDetectedObjectObservation
-                    else { print("TO Error", error); return }
+                    else {  self.srh[region] = nil; return }
                 let newBox = visionRectToNormal(newobs.boundingBox)
                 let oldobsQ = self.srobs[region]![name]
                 self.srobs[region]![name] = newobs
-                guard let oldobs = oldobsQ else { return }
-                //guard newobs.boundingBox != oldobs.boundingBox else { return }
+                if let oldobs = oldobsQ {
+                    guard newobs.boundingBox != oldobs.boundingBox else { return }
+                }
                 self.regions[name] = newobs.boundingBox
                 self.sendEvent(withName: "RNVision", body: ["key": name, "region": region, "frame": rectToDictionary(newBox), "confidence": newobs.confidence])
             }
-            r.preferBackgroundProcessing = true
+            //  r.preferBackgroundProcessing = true
             r.trackingLevel = .accurate
             return r
         }
@@ -859,3 +862,4 @@ func dictionaryToRect(_ dic:[String: Any]) -> CGRect? {
         else { return nil }
     return CGRect(x: x, y: y, width: width,height: height)
 }
+

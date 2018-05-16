@@ -22,10 +22,11 @@ class Wrapper extends Component {
     fixedRegions: {},
     trackedObjects: {},
     calculatedRegions: {},
-    imageDimensions: { height: 0, width: 0 }
+    imageDimensions: { height: 0, width: 0 },
+    providerValue: null
   };
   componentDidMount() {
-    this.getProviderValue();
+    this.setProviderValue();
   }
   componentWillUnmount() {
     if (this.state.connected) {
@@ -133,28 +134,34 @@ class Wrapper extends Component {
         const k = v.key;
         if (this[k]) return this[k](v);
       });
-      this.setState({ todos: null });
+      this.setState({ todos: null }, () => {
+        this.setProviderValue();
+      });
     }
     const todo = this.state.todoObjects;
     if (todo) {
       Object.keys(todo).forEach(k => {
         (async () => {
           try {
-            console.log("Adding trackobject");
             await removeTrackObject("", k);
-            await trackObject("", k, todo[k], newRect => {
-              console.log("Tracked change in ", k);
-              this.setState(({ calculatedRegions }) => {
-                const newcalcregions = { ...calculatedRegions, [k]: newRect };
-                console.log(
-                  "Newcalcregions",
-                  newcalcregions,
-                  calculatedRegions
-                );
-                return {
-                  calculatedRegions: newcalcregions
-                };
-              });
+            await trackObject("", k, todo[k], data => {
+              const newRect = data.frame;
+              this.setState(
+                ({ calculatedRegions }) => {
+                  const newcalcregions = { ...calculatedRegions, [k]: newRect };
+                  console.log(
+                    "Newcalcregions",
+                    newcalcregions,
+                    calculatedRegions
+                  );
+                  return {
+                    calculatedRegions: newcalcregions
+                  };
+                },
+                () => {
+                  this.setProviderValue();
+                }
+              );
             });
           } catch (e) {
             console.log("TRACKOBJECT FAIL", k, todo[k], e);
@@ -162,7 +169,7 @@ class Wrapper extends Component {
         })();
       });
       this.setState({ todoObjects: null }, () => {
-        this.getProviderValue();
+        this.setProviderValue();
       });
     }
   }
@@ -170,7 +177,7 @@ class Wrapper extends Component {
     this.manageTodo();
   }
   providerValue = {};
-  getProviderValue() {
+  setProviderValue() {
     //Check state
     isChanged = false;
     //Regions
@@ -199,25 +206,31 @@ class Wrapper extends Component {
       });
     }
     if (isChanged) {
-      this.providerValue = {
-        imageDimensions: this.state.imageDimensions,
-        isCameraFront: this.state.isCameraFront,
-        regions: {
-          "": null,
-          ...this.state.fixedRegions,
-          ...this.state.calculatedRegions
+      this.setState(
+        {
+          providerValue: {
+            imageDimensions: this.state.imageDimensions,
+            isCameraFront: this.state.isCameraFront,
+            regions: {
+              "": null,
+              ...this.state.fixedRegions,
+              ...this.state.calculatedRegions
+            }
+          }
+        },
+        () => {
+          if (typeof this.props.onRegionsChanged == "function") {
+            this.props.onRegionsChanged(this.state.providerValue.regions);
+          }
         }
-      };
-      if (typeof this.props.onRegionsChanged == "function") {
-        this.props.onRegionsChanged(this.providerValue.regions);
-      }
+      );
     }
-    //If state mutated relative to providerValue, change providerValue
-    return this.providerValue;
   }
   render() {
     return (
-      <Provider value={this.providerValue}>{this.props.children}</Provider>
+      <Provider value={this.state.providerValue}>
+        {this.props.children}
+      </Provider>
     );
   }
 }
