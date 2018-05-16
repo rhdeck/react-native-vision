@@ -51,6 +51,20 @@ const isCameraFrame = async isTrue => {
 const getImageDimensions = async () => {
   return await RNVNative.getImageDimensions();
 };
+var ImageDimensionListener = null;
+const setImageDimensionListener = cb => {
+  if (!cb) return removeImageDimensionListener();
+  if (typeof cb != "function")
+    throw new Error("Argument must be a function in setImageDimensionListener");
+  if (ImageDimensionListener) removeImageDimensionListener;
+  ImageDimensionListener = getEmitter().addListener("RNVisionImageDim", cb);
+  return true;
+};
+const removeImageDimensionListener = () => {
+  if (ImageDimensionListener) ImageDimensionListener.remove();
+  ImageDimensionListener = null;
+  return true;
+};
 //#endregion
 //#region Save Frame
 const saveFrame = async (region, disposition, callback) => {
@@ -286,6 +300,8 @@ export {
   attachCameraView,
   isCameraFrame,
   getImageDimensions,
+  setImageDimensionListener,
+  removeImageDimensionListener,
   saveFrame,
   saveFrameOnce,
   removeSaveFrame,
@@ -319,6 +335,8 @@ export default {
   attachCameraView,
   isCameraFrame,
   getImageDimensions,
+  setImageDimensionListener,
+  removeImageDimensionListener,
   saveFrame,
   saveFrameOnce,
   removeSaveFrame,
