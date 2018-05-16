@@ -132,8 +132,13 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             let cvp = CMSampleBufferGetImageBuffer(sampleBuffer)
         else { return }
         
-        imageHeight = CVPixelBufferGetHeight(cvp)
-        imageWidth  = CVPixelBufferGetWidth(cvp)
+        let newImageHeight = CVPixelBufferGetHeight(cvp)
+        let newImageWidth  = CVPixelBufferGetWidth(cvp)
+        if newImageHeight != imageHeight || newImageWidth != imageWidth {
+            imageHeight = newImageHeight
+            imageWidth = newImageWidth
+            sendEvent(withName: "RNVisionImageDim", body: ["height": newImageHeight, "width": newImageWidth])
+        }
         analyzePixelBuffer(cvp, key: "") //Image Analysis as applied to the whole visible region
         regions.forEach() { region, rect in
             guard sr[region] != nil || srg[region] != nil || ir[region] != nil ||  irg[region] != nil || sf[region] != nil else { return }
@@ -197,7 +202,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             case "file":
                 guard let d = UIImageJPEGRepresentation(i, 1.0) else { return }
                 let u = UUID().uuidString
-                let t = URL.init(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(u)
+                let t = URL.init(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(u).appendingPathExtension("jpg")
                 do {
                     try d.write(to: t)
                     self.sendEvent(withName: "RNVision", body: ["key": "saveFrame", "region": region, "event": "savedFile", "fileURL": t.absoluteString])
@@ -250,8 +255,8 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 let bb = rs.boundingBox
                 let normalRect = visionRectToNormal(bb)
                 data.append(rectToDictionary(normalRect))
-                self.sendEvent(withName: "RNVision", body: ["region": region, "key": "RNVFaceDetected", "data":data])
             }
+            self.sendEvent(withName: "RNVision", body: ["region": region, "key": "RNVFaceDetected", "data":data])
         }
         resolve("RNVFaceDetected");
     }
@@ -268,20 +273,21 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         let visionRect = normalRectToVision(r)
         let obs = VNDetectedObjectObservation(boundingBox: visionRect)
         srobs[region]![name] = obs
+        regions[name] = r
         srg[region]![name] = {
             guard let o = self.srobs[region]?[name] else { return nil }
             let r = VNTrackObjectRequest(detectedObjectObservation: o) {request, error in
                 guard
                     error == nil,
                     let newobs = request.results?.first as? VNDetectedObjectObservation
-                    else {  self.srh[region] = nil; return }
+                    else {  print("TO ERROR", error); self.srh[region] = nil; return }
                 let newBox = visionRectToNormal(newobs.boundingBox)
                 let oldobsQ = self.srobs[region]![name]
                 self.srobs[region]![name] = newobs
                 if let oldobs = oldobsQ {
                     guard newobs.boundingBox != oldobs.boundingBox else { return }
                 }
-                self.regions[name] = newobs.boundingBox
+                self.regions[name] = visionRectToNormal(newobs.boundingBox)
                 self.sendEvent(withName: "RNVision", body: ["key": name, "region": region, "frame": rectToDictionary(newBox), "confidence": newobs.confidence])
             }
             //  r.preferBackgroundProcessing = true
@@ -533,7 +539,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     }
     //MARK: RCTEventEmitter Support
     override func supportedEvents() -> [String]! {
-        return ["RNVision", "RNVMetaData"]
+        return ["RNVision", "RNVMetaData", "RNVisionImageDim"]
     }
     //MARK: Potential dumping
     func AVRectToPL(_ avRect: CGRect) -> CGRect {
