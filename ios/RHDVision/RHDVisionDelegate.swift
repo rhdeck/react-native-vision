@@ -139,7 +139,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         imageWidth  = CVPixelBufferGetWidth(cvp)
         analyzePixelBuffer(cvp, key: "") //Image Analysis as applied to the whole visible region
         regions.forEach() { region, rect in
-            guard let _ = sr[region], let _ = srg[region] , let _ = ir[region], let _ = irg[region], let _ = sf[region] else { return }
+            guard sr[region] != nil || srg[region] != nil || ir[region] != nil ||  irg[region] != nil || sf[region] != nil else { return }
             guard let slicedCVP = slicePixelBuffer(cvp, toRect: rect) else { return }
             analyzePixelBuffer(slicedCVP, key: region)
         }
@@ -161,9 +161,14 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             try? irh.perform(irs)
         }
         if let cb = sf[key] {
+            let h = CVPixelBufferGetHeight(cvp)
+            let w = CVPixelBufferGetWidth(cvp)
             let ci = CIImage(cvPixelBuffer: cvp)
-            let i = UIImage(ciImage: ci)
-            cb(i)
+            let tc = CIContext(options: nil)
+            if  let cg = tc.createCGImage(ci, from: CGRect(x: 0, y: 0, width: w, height: h)) {
+                let i = UIImage(cgImage: cg)
+                cb(i)
+            }
         }
         var srs:[VNRequest] = []
         if let s = sr[key] {
@@ -226,7 +231,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         }
         resolve(region)
     }
-    @objc func removeSaveFrame(_ region:Srtring, resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    @objc func removeSaveFrame(_ region:String, resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         sf.removeValue(forKey: region)
         resolve(true)
     }
@@ -822,7 +827,7 @@ func slicePixelBuffer(_ cvp: CVPixelBuffer, toRect: CGRect) -> CVPixelBuffer? {
     let cropHeight = Int(toRect.height * CGFloat(sourceHeight))
     let cropX = Int(toRect.origin.x * CGFloat(sourceWidth))
     let cropY = Int(toRect.origin.y * CGFloat(sourceHeight))
-    return resizePixelBuffer(cvp, cropX: cropX, cropY: cropY, cropWidth: cropWidth, cropHeight: cropHeight, scaleWidth: sourceWidth, scaleHeight: sourceHeight)
+    return resizePixelBuffer(cvp, cropX: cropX, cropY: cropY, cropWidth: cropWidth, cropHeight: cropHeight, scaleWidth: cropHeight, scaleHeight: cropWidth)
 }
 //MARK: Rectangle Conversion
 func visionRectToNormal(_ visionRect: CGRect)->CGRect {
