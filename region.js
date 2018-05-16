@@ -15,14 +15,23 @@ class Region extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     var ret = prevState;
     if (prevState.frameListener != nextProps.onFrameCaptured) {
+      console.log("FRAME DIFF");
       if (nextProps.onFrameCaptured) {
+        console.log("I AM TURNING ON FRAME CAPTURE");
         //Turn it on!
-        Module.saveFrame(nextProps.region, "file", body => {
-          nextProps.onFrameCaptured(body);
-        });
+        Module.saveFrame(
+          nextProps.region,
+          nextProps.frameDisposition ? nextProps.frameDisposition : "file",
+          body => {
+            console.log("I AM FRAME CAPTURE BACK");
+            nextProps.onFrameCaptured(body);
+          }
+        );
       } else {
+        console.log("I AM TURNING OFF FRAME CAPTURE");
         Module.removeSaveFrame(nextProps.region);
       }
+      ret.frameListener = nextProps.onFrameCaptured;
     }
     if (nextProps.classifiers != prevState.classifiers) {
       //compare the two
@@ -112,6 +121,7 @@ Region.propTypes = {
   generics: PropTypes.array,
   bottlenecks: PropTypes.object,
   children: PropTypes.func.isRequired,
-  onFrameCaptured: PropTypes.func
+  onFrameCaptured: PropTypes.func,
+  frameDisposition: PropTypes.string
 };
 export default Region;
