@@ -11,7 +11,9 @@ import Module, {
   setRegion,
   trackObject,
   removeTrackObject,
-  getImageDimensions
+  getImageDimensions,
+  setImageDimensionListener,
+  removeImageDimensionListener
 } from "./module";
 const { Provider, Consumer } = createContext(null);
 class Wrapper extends Component {
@@ -40,7 +42,6 @@ class Wrapper extends Component {
       ret.isCameraFront = nextProps.isCameraFront;
       if (prevState.isStarted) {
         start(ret.isCameraFront);
-        ret.todos.push({ key: "getImageDimensions" });
       }
     }
     if (nextProps.isStarted != prevState.isStarted) {
@@ -48,19 +49,18 @@ class Wrapper extends Component {
       if (nextProps.isStarted) {
         start(ret.isCameraFront);
         ret.todos.push({ key: "getImageDimensions" });
-      } else stop();
+      } else {
+        stop();
+        removeImageDimensionListener();
+      }
     }
     if (nextProps.onDetectedFaces != prevState.onDetectedFaces) {
       if (nextProps.onDetectedFaces) {
         //Turn it on
-        console.log("Activating detectFaces");
         detectFaces("", nextProps.onDetectedFaces);
-        ret.todos.push({ key: "getImageDimensions" });
       } else {
         //Turn it off
-        console.log("removing detectfaces");
         removeDetectFaces("");
-        ret.todos.push({ key: "getImageDimensions" });
       }
       ret.onDetectedFaces = nextProps.onDetectedFaces;
     }
@@ -82,13 +82,12 @@ class Wrapper extends Component {
         });
       Object.keys(prevState.trackedObjects).forEach(k => {
         const v = prevState.trackedObjects[k];
-        if (!nextProps.trackedObjects[k]) {
+        if (!nextProps.trackedObjects || !nextProps.trackedObjects[k]) {
           removeTrackObject("", k);
           delete ret.calculatedRegions[k];
         }
       });
-      ret.todos.push({ key: "getImageDimensions" });
-      ret = nextProps.trackedObjects;
+      ret.trackedObjects = nextProps.trackedObjects;
     }
     if (nextProps.regions != prevState.fixedRegions) {
       var shouldChange = false;
@@ -108,15 +107,9 @@ class Wrapper extends Component {
     if (ret && ret.todos && ret.todos.length == 0) delete ret.todos;
     return ret;
   }
-  async getImageDimensions() {
-    console.log("Getting image dimensions");
-    const dims = await getImageDimensions();
-    console.log("Got image dimensions!", dims);
-    if (dims.height == 0) {
-      setTimeout(() => {
-        this.getImageDimensions();
-      }, 1000);
-    } else {
+  getImageDimensions() {
+    setImageDimensionListener(dims => {
+      console.log("Heard image dimension change", dims);
       this.setState(({ imageDimensions }) => {
         if (
           dims &&
@@ -125,7 +118,7 @@ class Wrapper extends Component {
         )
           return { imageDimensions: dims };
       });
-    }
+    });
   }
   manageTodo() {
     const todos = this.state.todos;
