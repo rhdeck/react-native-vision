@@ -56,7 +56,7 @@ const getImageDimensions = async () => {
 const saveFrame = async (region, disposition, callback) => {
   //Add a listener
   addListener(region, "saveFrame", callback);
-  return await RNVNative.saveFrame(region, disposition);
+  return await RNVNative.saveFrame(disposition, region);
 };
 const removeSaveFrame = async region => {
   removeListener(region, "saveFrame");
