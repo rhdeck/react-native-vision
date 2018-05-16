@@ -2,7 +2,7 @@ import React from "react";
 import { CameraConsumer } from "./view";
 import Region from "./region";
 import PropTypes from "prop-types";
-CameraRegion = props => {
+const CameraRegion = props => {
   return (
     <Region {...{ ...props, children: null }}>
       {regionInfo => {
