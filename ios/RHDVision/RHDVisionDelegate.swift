@@ -79,6 +79,12 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             o.alwaysDiscardsLateVideoFrames = true
             o.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
             s.addOutput(o)
+            /*
+             let o2 = AVCaptureMetadataOutput()
+            o2.setMetadataObjectsDelegate(self, queue:DispatchQueue.main)
+            o2.metadataObjectTypes = o2.availableMetadataObjectTypes
+            s.addOutput(o2)
+ */
             if let conn = o.connection(withMediaType: AVMediaTypeVideo) {
                 conn.videoOrientation = deviceOrientationtoAVOrientation(UIDevice.current.orientation)
             }
@@ -139,10 +145,10 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             imageWidth = newImageWidth
             sendEvent(withName: "RNVisionImageDim", body: ["height": newImageHeight, "width": newImageWidth])
         }
+        if newImageWidth==0 || newImageHeight==0 { return }
         analyzePixelBuffer(cvp, key: "") //Image Analysis as applied to the whole visible region
         regions.forEach() { region, rect in
             guard sr[region] != nil || srg[region] != nil || ir[region] != nil ||  irg[region] != nil || sf[region] != nil else { return }
-            print("Slicing to rect", rect)
             guard let slicedCVP = slicePixelBuffer(cvp, toRect: rect) else { return }
             analyzePixelBuffer(slicedCVP, key: region)
         }
@@ -164,14 +170,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             try? irh.perform(irs)
         }
         if let cb = sf[key] {
-            let h = CVPixelBufferGetHeight(cvp)
-            let w = CVPixelBufferGetWidth(cvp)
-            let ci = CIImage(cvPixelBuffer: cvp)
-            let tc = CIContext(options: nil)
-            if  let cg = tc.createCGImage(ci, from: CGRect(x: 0, y: 0, width: w, height: h)) {
-                let i = UIImage(cgImage: cg)
-                cb(i)
-            }
+            if let i = CVPtoUIImage(cvp) { cb(i) }
         }
         var srs:[VNRequest] = []
         if let s = sr[key] {
@@ -202,7 +201,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             case "file":
                 guard let d = UIImageJPEGRepresentation(i, 1.0) else { return }
                 let u = UUID().uuidString
-                let t = URL.init(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(u).appendingPathExtension("jpg")
+                let t = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(u).appendingPathExtension("jpg")
                 do {
                     try d.write(to: t)
                     self.sendEvent(withName: "RNVision", body: ["key": "saveFrame", "region": region, "event": "savedFile", "fileURL": t.absoluteString])
@@ -244,7 +243,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     }
     //MARK:Face Detection
     @objc func detectFaces(_ region: String, resolve: RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) {
-        guard ir[region]?["detectFaces"] == nil else { resolve("RNVFaceDetected"); return }
+        guard ir[region]?["detectFaces"] == nil else { resolve("detectFaces"); return }
         if ir[region] == nil { ir[region] = [:] }
         ir[region]!["detectFaces"] = VNDetectFaceRectanglesRequest() { request, error in
             var data:[Any] = []
@@ -256,9 +255,9 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
                 let normalRect = visionRectToNormal(bb)
                 data.append(rectToDictionary(normalRect))
             }
-            self.sendEvent(withName: "RNVision", body: ["region": region, "key": "RNVFaceDetected", "data":data])
+            self.sendEvent(withName: "RNVision", body: ["region": region, "key": "detectFaces", "data":data])
         }
-        resolve("RNVFaceDetected");
+        resolve("detectFaces");
     }
     @objc func removeDetectFaces(_ region: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         guard let _ = ir[region]?["detectFaces"]  else { reject("not_running", "Not running detect faces",nil); return}
@@ -298,11 +297,13 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     }
     @objc func removeTrackObject(_ name: String, region: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         srobs[region]?.removeValue(forKey: name)
+        srg[region]?.removeValue(forKey: name)
         resolve(true)
     }
     @objc func removeTrackObjects(_ region: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         let keys = srobs[region]?.keys
         srobs[region]?.removeAll()
+        srg[region]?.removeAll()
         resolve(["removedKeys": keys])
     }
     //MARK: CoreML Model Application
@@ -345,13 +346,34 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             guard error == nil, let results = request.results else { return }
             for result in results {
                 if let pbo = result as? VNPixelBufferObservation {
-                    //OK, let's save this result
-                    //Check my handlers
-                    if handler == "sendEvent" {
+                    switch handler {
+                    case "memory":
                         self.pixelBuffers[thisURL] = pbo.pixelBuffer;
-                        self.sendEvent(withName: "RNVision", body: ["region": field, "key": thisURL])
-                    } else if let v = RHDVisionImageViewManager.instance?.views[handler] {
-                        v.image = UIImage(ciImage: CIImage(cvPixelBuffer: pbo.pixelBuffer))
+                        self.sendEvent(withName: "RNVision", body: ["region": field, "key": thisURL, "data": ["memorykey": thisURL]])
+                    case "file":
+                        if let i = CVPtoUIImage(pbo.pixelBuffer) {
+                            if let d = UIImageJPEGRepresentation(i, 1.0) {
+                                do {
+                                    let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent((thisURL as NSString).lastPathComponent).appendingPathExtension("jpg")
+                                    try d.write(to: url)
+                                    self.sendEvent(withName: "RNVision", body: ["region": field, "key": thisURL, "data": ["url": url.absoluteString]])
+                                } catch {
+                                    NSLog(error.localizedDescription)
+                                    self.sendEvent(withName: "RNVision", body: ["region": field, "key": thisURL, "data": ["error": "No save"]])
+                                }
+                            } else {
+                                self.sendEvent(withName: "RNVision", body: ["region": field, "key": thisURL, "data": ["error": "No save"]])
+                            }
+                        }
+                    case "view":
+                        //do nothing
+                        if let v = RHDVisionImageViewManager.instance?.views[thisURL], let ui = CVPtoUIImage(pbo.pixelBuffer) {
+                            DispatchQueue.main.async() {
+                                v.image = ui
+                            }
+                        }
+                    default:
+                        NSLog("Unhandled generator handler key: " + handler)
                     }
                 }
             }
@@ -541,114 +563,6 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     override func supportedEvents() -> [String]! {
         return ["RNVision", "RNVMetaData", "RNVisionImageDim"]
     }
-    //MARK: Potential dumping
-    func AVRectToPL(_ avRect: CGRect) -> CGRect {
-        let mr = getMetaRectangle()
-        let innerRect = convertOuterToInner(
-            outerRect: avRect ,
-            innerRect: mr
-        )
-        let mirroredRect = fixMirroredRect(innerRect, isMirrored: self.cachedVideoMirrored)
-        return mirroredRect
-    }
-    func PLRectToAV(_ plRect: CGRect) -> CGRect {
-        let mr = getMetaRectangle()
-        let or = convertInnerToOuter(innerRect: plRect, outerRect: mr)
-        let mir = fixMirroredRect(or, isMirrored: self.cachedVideoMirrored)
-        return mir
-    }
-    func fixMirroredRect(_ sourceRect: CGRect) -> CGRect {
-        return fixMirroredRect(sourceRect, isMirrored: true)
-    }
-    func fixMirroredRect(_ sourceRect:CGRect, isMirrored: Bool) -> CGRect {
-        return CGRect(
-            x: isMirrored ? 1.0 - sourceRect.origin.x - sourceRect.size.width : sourceRect.origin.x,
-            y: sourceRect.origin.y,
-            width: sourceRect.size.width,
-            height: sourceRect.size.height
-        )
-    }
-    func turnRect(_ oRect: CGRect, degrees: Int) -> CGRect{
-        var degrees = degrees
-        while degrees < 0 { degrees = degrees + 360 }
-        while degrees > 360 { degrees = degrees - 360 }
-        print("I am turning degrees!", degrees)
-        switch(degrees) {
-        case 90:
-            //Turning from portrait to landscaperight
-            return CGRect(
-                x: 1.0 - oRect.origin.y - oRect.size.height,
-                y: oRect.origin.x,
-                width: oRect.size.height,
-                height: oRect.size.width)
-        case 180:
-            //Turning all the way over, obvs!
-            return CGRect(
-                x: 1.0 - oRect.origin.x - oRect.size.width,
-                y: 1.0 - oRect.origin.y - oRect.size.height,
-                width: oRect.size.width,
-                height: oRect.size.height)
-        case 270:
-            //Turning from landscaperight to portrait
-            return CGRect(
-                x: oRect.origin.y,
-                y: 1.0 - oRect.origin.x - oRect.size.width,
-                width: oRect.size.height,
-                height: oRect.size.width)
-        default:
-            //No rotation:
-            return oRect
-        }
-    }
-    func orientationChangeToDegrees(startOrientation: AVCaptureVideoOrientation, endOrientation: AVCaptureVideoOrientation) -> Int {
-        
-        let endDegrees = orientationToDegrees(endOrientation)
-        let startDegrees = orientationToDegrees(startOrientation)
-        print("turning from ", endDegrees, startDegrees)
-        let difference =  endDegrees - startDegrees
-        print("Difference is ", difference)
-        return difference
-    }
-    func orientationToDegrees(_ orientation: AVCaptureVideoOrientation) -> Int {
-        switch orientation {
-        case AVCaptureVideoOrientation.portrait:
-            return 0
-        case AVCaptureVideoOrientation.portraitUpsideDown:
-            return 180
-        case AVCaptureVideoOrientation.landscapeLeft:
-            return 270
-        case AVCaptureVideoOrientation.landscapeRight:
-            return 90
-        }
-    }
-    func orientedRectToOriginal(_ oRect: CGRect) -> CGRect {
-        let _ = getMetaRectangle()
-        return turnRect(oRect, degrees: orientationChangeToDegrees(startOrientation: cachedAVOrientation, endOrientation: AVCaptureVideoOrientation.landscapeRight))
-    }
-    func originalRectToOriented(_ oRect: CGRect) -> CGRect {
-        let _ = getMetaRectangle()
-        return turnRect(oRect, degrees: orientationChangeToDegrees(startOrientation: AVCaptureVideoOrientation.landscapeRight, endOrientation: cachedAVOrientation))
-    }
-    var cachedMetaRectangle:CGRect = CGRect(x:0, y:0, width: 0, height: 0)
-    var cachedOriginalMetaRectangle:CGRect = CGRect(x:0, y:0, width: 0, height: 0)
-    var cachedAVOrientation:AVCaptureVideoOrientation = AVCaptureVideoOrientation.portrait
-    var cachedVideoMirrored:Bool = false
-    func getMetaRectangle() -> CGRect {
-        guard cachedOriginalMetaRectangle.size.height > 0 else {
-            return loadMetaRectangleInfo()
-        }
-        return cachedMetaRectangle
-    }
-    func loadMetaRectangleInfo() -> CGRect {
-        guard let pl = pl else { return cachedMetaRectangle }
-        let mr = pl.metadataOutputRectOfInterest(for: pl.visibleRect)
-        cachedVideoMirrored =  pl.connection.isVideoMirrored
-        cachedOriginalMetaRectangle = mr;
-        cachedAVOrientation = pl.connection.videoOrientation
-        cachedMetaRectangle = turnRect(mr, degrees: orientationChangeToDegrees(startOrientation: AVCaptureVideoOrientation.landscapeRight, endOrientation: cachedAVOrientation))
-        return cachedMetaRectangle
-    }
-    
 }
 //MARK: Orientation Conversion
 func deviceOrientationtoAVOrientation(_ uiorientation:UIDeviceOrientation) -> AVCaptureVideoOrientation {
@@ -675,25 +589,6 @@ func AVOrientationToDeviceOrientation(_ avorientation:AVCaptureVideoOrientation)
     case .portraitUpsideDown: return .portraitUpsideDown
     }
     
-}
-//MARK: Relative Rectangle Conversion
-func convertInnerToOuter(innerRect: CGRect, outerRect: CGRect) -> CGRect{
-    //Assuming all 0-1 coordinates, where innerRect is relative to outerRect, and outerRect is relative to target rect space
-    return CGRect(
-        x: innerRect.origin.x * outerRect.size.width + outerRect.origin.x,
-        y: innerRect.origin.y * outerRect.size.height + outerRect.origin.y,
-        width: innerRect.size.width * outerRect.size.width,
-        height: innerRect.size.height * outerRect.size.height
-    )
-}
-func convertOuterToInner(outerRect: CGRect, innerRect: CGRect) -> CGRect {
-    //Given a rectangle in coordinates relative to outer (outerRect) Returns coordinates relative to innerRect
-    return CGRect(
-        x: (outerRect.origin.x - innerRect.origin.x) / innerRect.size.width,
-        y: (outerRect.origin.y - innerRect.origin.y) / innerRect.size.height,
-        width: outerRect.size.width / innerRect.size.width,
-        height: outerRect.size.height / innerRect.size.height
-    )
 }
 //MARK: Feature Management and MultiArrays
 var multiArrays:[String:MLMultiArray] = [:]
@@ -868,4 +763,11 @@ func dictionaryToRect(_ dic:[String: Any]) -> CGRect? {
         else { return nil }
     return CGRect(x: x, y: y, width: width,height: height)
 }
-
+func CVPtoUIImage(_ cvp: CVPixelBuffer) -> UIImage? {
+    let h = CVPixelBufferGetHeight(cvp)
+    let w = CVPixelBufferGetWidth(cvp)
+    let ci = CIImage(cvPixelBuffer: cvp)
+    let tc = CIContext(options: nil)
+    guard let cg = tc.createCGImage(ci, from: CGRect(x: 0, y: 0, width: w, height: h))  else { return nil}
+    return UIImage(cgImage: cg)
+}
