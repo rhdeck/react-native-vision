@@ -173,54 +173,24 @@ class Wrapper extends Component {
     this.manageTodo();
   }
   setProviderValue() {
-    //Check state
-    isChanged = true;
-    //Regions
-
-    // if (Object.keys(this.providerValue).length == 0) {
-    //   isChanged = true;
-    // } else if (
-    //   this.state.providerValue &&
-    //   this.state.providerValue.imageDimensions &&
-    //   (this.state.providerValue.imageDimensions.height !=
-    //     this.state.imageDimensions.height ||
-    //     this.state.providerValue.imageDimensions.width !=
-    //       this.state.imageDimensions.width)
-    // ) {
-    //   isChanged = true;
-    // } else if (Object.keys(this.state.calculatedRegions).) {
-    //   isChanged = true;
-    // } else {
-    //   Object.keys(this.state.fixedRegions).forEach(k => {
-    //     const v = this.state.fixedRegions[k];
-    //     if (
-    //       !providerValue.regions[k] ||
-    //       JSON.stringify(providerValue.regions[k] != JSON.stringify(v))
-    //     ) {
-    //       isChanged = true;
-    //     }
-    //   });
-    // }
-    if (isChanged) {
-      this.setState(
-        {
-          providerValue: {
-            imageDimensions: this.state.imageDimensions,
-            isCameraFront: this.state.isCameraFront,
-            regions: {
-              "": null,
-              ...this.state.fixedRegions,
-              ...this.state.calculatedRegions
-            }
-          }
-        },
-        () => {
-          if (typeof this.props.onRegionsChanged == "function") {
-            this.props.onRegionsChanged(this.state.providerValue.regions);
+    this.setState(
+      {
+        providerValue: {
+          imageDimensions: this.state.imageDimensions,
+          isCameraFront: this.state.isCameraFront,
+          regions: {
+            "": null,
+            ...this.state.fixedRegions,
+            ...this.state.calculatedRegions
           }
         }
-      );
-    }
+      },
+      () => {
+        if (typeof this.props.onRegionsChanged == "function") {
+          this.props.onRegionsChanged(this.state.providerValue.regions);
+        }
+      }
+    );
   }
   render() {
     return (
