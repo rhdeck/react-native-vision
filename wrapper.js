@@ -85,6 +85,7 @@ class Wrapper extends Component {
         if (!nextProps.trackedObjects || !nextProps.trackedObjects[k]) {
           removeTrackObject("", k);
           delete ret.calculatedRegions[k];
+          ret.todos.push({ key: "setProviderValue" });
         }
       });
       ret.trackedObjects = nextProps.trackedObjects;
@@ -109,7 +110,6 @@ class Wrapper extends Component {
   }
   getImageDimensions() {
     setImageDimensionListener(dims => {
-      console.log("Heard image dimension change", dims);
       this.setState(({ imageDimensions }) => {
         if (
           dims &&
@@ -140,16 +140,19 @@ class Wrapper extends Component {
             await trackObject("", k, todo[k], data => {
               const newRect = data.frame;
               this.setState(
-                ({ calculatedRegions }) => {
-                  const newcalcregions = { ...calculatedRegions, [k]: newRect };
-                  console.log(
-                    "Newcalcregions",
-                    newcalcregions,
-                    calculatedRegions
-                  );
-                  return {
-                    calculatedRegions: newcalcregions
-                  };
+                ({ calculatedRegions, trackedObjects }) => {
+                  if (!trackedObjects || !trackedObjects[k]) {
+                    return {
+                      calculatedRegions: { calculatedRegions, [k]: null }
+                    };
+                  } else {
+                    return {
+                      calculatedRegions: {
+                        ...calculatedRegions,
+                        [k]: newRect
+                      }
+                    };
+                  }
                 },
                 () => {
                   this.setProviderValue();
@@ -169,35 +172,35 @@ class Wrapper extends Component {
   componentDidUpdate() {
     this.manageTodo();
   }
-  providerValue = {};
   setProviderValue() {
     //Check state
-    isChanged = false;
+    isChanged = true;
     //Regions
-    if (Object.keys(this.providerValue).length == 0) {
-      isChanged = true;
-    } else if (
-      this.providerValue &&
-      this.providerValue.imageDimensions &&
-      (this.providerValue.imageDimensions.height !=
-        this.state.imageDimensions.height ||
-        this.providerValue.imageDimensions.width !=
-          this.state.imageDimensions.width)
-    ) {
-      isChanged = true;
-    } else if (Object.keys(this.state.calculatedRegions).length) {
-      isChanged = true;
-    } else {
-      Object.keys(this.state.fixedRegions).forEach(k => {
-        const v = this.state.fixedRegions[k];
-        if (
-          !providerValue.regions[k] ||
-          JSON.stringify(providerValue.regions[k] != JSON.stringify(v))
-        ) {
-          isChanged = true;
-        }
-      });
-    }
+
+    // if (Object.keys(this.providerValue).length == 0) {
+    //   isChanged = true;
+    // } else if (
+    //   this.state.providerValue &&
+    //   this.state.providerValue.imageDimensions &&
+    //   (this.state.providerValue.imageDimensions.height !=
+    //     this.state.imageDimensions.height ||
+    //     this.state.providerValue.imageDimensions.width !=
+    //       this.state.imageDimensions.width)
+    // ) {
+    //   isChanged = true;
+    // } else if (Object.keys(this.state.calculatedRegions).) {
+    //   isChanged = true;
+    // } else {
+    //   Object.keys(this.state.fixedRegions).forEach(k => {
+    //     const v = this.state.fixedRegions[k];
+    //     if (
+    //       !providerValue.regions[k] ||
+    //       JSON.stringify(providerValue.regions[k] != JSON.stringify(v))
+    //     ) {
+    //       isChanged = true;
+    //     }
+    //   });
+    // }
     if (isChanged) {
       this.setState(
         {
