@@ -87,17 +87,15 @@ const saveFrameOnce = (region, disposition) => {
 };
 //#endregion
 //#region Face Detection
-var regionFaceKeys = {};
 const detectFaces = async (region, handler) => {
-  const key = await RNVNative.detectFaces(region);
+  const key = await RNVNative.detectFaces(region); // Key should be "detectFaces"
   addListener(region, key, body => {
     return handler(body.data);
   });
-  regionFaceKeys[region] = key;
   return key;
 };
 const removeDetectFaces = async region => {
-  removeListener(region, regionFaceKeys[region]);
+  removeListener(region, "detectFaces");
   return await RNVNative.removeDetectFaces(region);
 };
 const detectFacesOnce = region => {
@@ -153,11 +151,11 @@ const applyMLClassifier = async (
   }
   const key = await RNVNative.applyMLClassifier(modelURL, region, maxResults);
   if (key) {
-    addListener(key, body => {
+    addListener(region, key, body => {
       callback(body.data);
     });
   }
-  return await RNVNative.applyMLClassifier(modelURL, maxResults);
+  return key;
 };
 const applyMLClassifierOnce = (region, modelURL, maxResults) => {
   return new Promise((resolve, reject) => {
@@ -167,13 +165,14 @@ const applyMLClassifierOnce = (region, modelURL, maxResults) => {
     });
   });
 };
-const applyMLGenerator = async (region, modelURL, handlerOrCallback) => {
-  const handler =
-    typeof handlerOrCallback == "function" ? "sendEvent" : handlerOrCallback;
+const applyMLGenerator = async (region, modelURL, handler, callback) => {
   const key = await RNVNative.applyMLGenerator(modelURL, region, handler);
-  if (key && handler == "sendEvent") {
-    addListener(region, key, callback);
+  if (handler != "view" && typeof callback == "function") {
+    addListener(region, key, data => {
+      callback(data.data);
+    });
   }
+  return key;
 };
 const applyMLBottleneck = async modelURL => {
   return await RNVNative.applyMLBottleneck(modelURL);
@@ -185,6 +184,7 @@ const applyMLGeneric = async (region, modelURL, callback) => {
       callback(body.data);
     });
   }
+  return key;
 };
 const applyMLGenericOnce = (region, modelURL) => {
   return new Promise((resolve, reject) => {
@@ -293,6 +293,7 @@ const removeMetadataListener = {
   }
 };
 //#endregion
+//#region Exports
 export {
   REGION_ALL,
   start,
@@ -363,3 +364,4 @@ export default {
   handleMetadata,
   removeMetadataListener
 };
+//#endregion
