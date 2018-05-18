@@ -31,6 +31,8 @@ RCT_EXTERN_METHOD(removeRegion:(NSString *)region resolve:(RCTPromiseResolveBloc
 RCT_EXTERN_METHOD(saveMultiArraykey:(NSString *)key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject);
 @end
 @interface RCT_EXTERN_MODULE(RHDVisionImageViewManager, RCTViewManager)
+RCT_EXPORT_VIEW_PROPERTY(isMirrored, BOOL);
+RCT_EXPORT_VIEW_PROPERTY(resizeMode, NSString *);
 RCT_EXPORT_VIEW_PROPERTY(id, NSString *);
 @end
 @interface RCT_EXTERN_MODULE(RHDVisionCameraViewManager, RCTViewManager)

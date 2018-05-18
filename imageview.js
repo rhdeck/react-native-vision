@@ -6,7 +6,14 @@ const NativeVision = requireNativeComponent("RHDVisionImageView", RNVImageView);
 
 class RNVImageView extends Component {
   render() {
-    return <NativeVision {...this.props} />;
+    return (
+      <NativeVision
+        {...this.props}
+        resizeMode={
+          this.props.style.resizeMode ? this.props.style.resizeMode : "cover"
+        }
+      />
+    );
   }
 }
 RNVImageView.propTypes = {
