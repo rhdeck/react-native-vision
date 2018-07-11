@@ -259,7 +259,7 @@ const applyBottleneckGeneric = async (
       callback(body.data);
     });
   }
-};
+};  
 const removeBottleneck = async (modelURL, region, fromModelURL) => {
   removeListener(modelURL);
   return await RNVNative.removeBottleneck(modelURL, region, fromModelURL);
@@ -295,41 +295,6 @@ const removeMetadataListener = {
 //#endregion
 //#region Exports
 export {
-  REGION_ALL,
-  start,
-  stop,
-  attachCameraView,
-  isCameraFrame,
-  getImageDimensions,
-  setImageDimensionListener,
-  removeImageDimensionListener,
-  saveFrame,
-  saveFrameOnce,
-  removeSaveFrame,
-  detectFaces,
-  detectFacesOnce,
-  removeDetectFaces,
-  trackObject,
-  removeTrackObject,
-  setRegion,
-  removeRegion,
-  applyMLClassifier,
-  applyMLClassifierOnce,
-  applyMLGenerator,
-  applyMLBottleneck,
-  applyMLGeneric,
-  applyMLGenericOnce,
-  applyBottleneckClassifier,
-  applyBottleneckGenerator,
-  applyBottleneckBottleneck,
-  applyBottleneckGeneric,
-  removeML,
-  removeBottleneck,
-  removeBottlenecks,
-  handleMetadata,
-  removeMetadataListener
-};
-export default {
   REGION_ALL,
   start,
   stop,
