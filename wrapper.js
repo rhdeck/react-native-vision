@@ -1,7 +1,6 @@
 import React, { createContext, Component } from "react";
 import PropTypes from "prop-types";
-import Module, {
-  detach,
+import {
   start,
   stop,
   detectFacesOnce,
@@ -15,8 +14,8 @@ import Module, {
   setImageDimensionListener,
   removeImageDimensionListener
 } from "./module";
-const { Provider, Consumer } = createContext(null);
-class Wrapper extends Component {
+const { Provider, Consumer: RNVisionConsumer } = createContext(null);
+class RNVisionProvider extends Component {
   state = {
     isStarted: false,
     isCameraFront: false,
@@ -200,7 +199,7 @@ class Wrapper extends Component {
     );
   }
 }
-Wrapper.propTypes = {
+RNVisionProvider.propTypes = {
   isStarted: PropTypes.bool.isRequired,
   isCameraFront: PropTypes.bool.isRequired,
   onDetectedFaces: PropTypes.func,
@@ -208,7 +207,7 @@ Wrapper.propTypes = {
   regions: PropTypes.object,
   onRegionsChanged: PropTypes.func
 };
-Wrapper.detectFaces = async () => {
+RNVisionProvider.detectFaces = async () => {
   return await detectFacesOnce("");
 };
-export { Wrapper, Consumer };
+export { RNVisionProvider, RNVisionConsumer };

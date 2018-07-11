@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Consumer } from "./wrapper";
+import { RNVisionConsumer } from "./wrapper";
 import * as Module from "./module";
 class Region extends Component {
   state = {
@@ -187,7 +187,7 @@ class Region extends Component {
   }
   render() {
     return this.props.children ? (
-      <Consumer>
+      <RNVisionConsumer>
         {value => {
           if (!value) return;
           const region = value.regions[this.props.region];
@@ -200,7 +200,7 @@ class Region extends Component {
           };
           return this.props.children(regionInfo);
         }}
-      </Consumer>
+      </RNVisionConsumer>
     ) : null;
   }
 }

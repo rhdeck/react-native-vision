@@ -1,6 +1,6 @@
 import { requireNativeComponent, NativeModules, View } from "react-native";
 import { attachCameraView } from "./module";
-import { Consumer } from "./wrapper";
+import { RNVisionConsumer } from "./wrapper";
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import Region from "./region";
@@ -42,7 +42,7 @@ class RNVision extends Component {
           }}
         >
           {typeof this.props.children == "function" ? (
-            <Consumer>
+            <RNVisionConsumer>
               {value => {
                 const newValue = {
                   ...value,
@@ -54,7 +54,7 @@ class RNVision extends Component {
                 };
                 return this.props.children(newValue);
               }}
-            </Consumer>
+            </RNVisionConsumer>
           ) : (
             this.props.children
           )}
@@ -69,5 +69,5 @@ RNVision.defaultProps = {
 RNVision.propTypes = {
   gravity: PropTypes.string.isRequired
 };
-export { RNVision as CameraView, CameraConsumer };
+export { RNVision as RNVCameraView, RNVCameraConsumer };
 export default RNVision;
