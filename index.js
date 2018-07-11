@@ -1,26 +1,16 @@
-import { CameraView, CameraConsumer } from "./view";
+import { RNVCameraView, RNVCameraConsumer } from "./view";
 import Delegate from "./module";
-import ImageView from "./imageview";
-import { Wrapper, Consumer } from "./wrapper";
-import Region from "./region";
-import CameraRegion from "./cameraregion";
+import RNVImageView from "./imageview";
+import { RNVisionProvider, RNVisionConsumer } from "./wrapper";
+import RNVRegion from "./region";
+import RNVCameraRegion from "./cameraregion";
 export {
-  CameraView,
+  RNVCameraView,
   Delegate,
-  Wrapper,
-  Consumer,
-  ImageView,
-  Region,
-  CameraRegion,
-  CameraConsumer
-};
-export default {
-  CameraView,
-  Delegate,
-  Wrapper,
-  Consumer,
-  ImageView,
-  Region,
-  CameraRegion,
-  CameraConsumer
+  RNVisionProvider,
+  RNVisionConsumer,
+  RNVImageView,
+  RNVRegion,
+  RNVCameraRegion,
+  RNVCameraConsumer
 };
