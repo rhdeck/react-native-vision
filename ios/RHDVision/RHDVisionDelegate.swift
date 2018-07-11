@@ -597,19 +597,19 @@ func convertFeatureValue(_ v:MLFeatureValue) -> (String, Any?) {
     var o:Any?;
     var ts:String = "";
     switch t {
-    case MLFeatureType.string:
+    case .string:
         ts = "string";
         o = v.stringValue;
-    case MLFeatureType.double:
+    case .double:
         ts = "double";
         o = v.doubleValue;
-    case MLFeatureType.int64:
+    case .int64:
         ts = "int64";
         o = v.int64Value;
-    case MLFeatureType.dictionary:
+    case .dictionary:
         ts = "dictionary";
         o = v.dictionaryValue
-    case MLFeatureType.image:
+    case .image:
         if let cvib:CVImageBuffer = v.imageBufferValue {
             let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString).appendingPathExtension("jpg")
             let ci = CIImage(cvImageBuffer: cvib)
@@ -619,14 +619,30 @@ func convertFeatureValue(_ v:MLFeatureValue) -> (String, Any?) {
             } else { o = "COULDNOTWRITE" }
             ts = "image";
         }
-    case MLFeatureType.invalid:
+    case .invalid:
         print("This was an invalid answer");
-    case MLFeatureType.multiArray:
+    case .multiArray:
         if let m = v.multiArrayValue {
             ts = "multiarray"
             let k = UUID().uuidString
             multiArrays[k] = m
             o = k
+        }
+    case .sequence:
+        //Not sure what to do with this
+        ts = "sequence"
+        if #available(iOS 12.0, *) {
+            let s = v as! MLSequence
+            switch s.type {
+            case MLFeatureType.string:
+                o = s.stringValues
+            case MLFeatureType.int64:
+                o = s.int64Values
+            default:
+                o = s.stringValues
+            }
+        } else {
+            // Fallback on earlier versions
         }
     }
     return (ts, o)
