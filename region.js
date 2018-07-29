@@ -16,9 +16,7 @@ class Region extends Component {
     var ret = prevState;
     if (!ret.todos) ret.todos = {};
     if (prevState.frameListener != nextProps.onFrameCaptured) {
-      console.log("FRAME DIFF");
       if (nextProps.onFrameCaptured) {
-        console.log("I AM TURNING ON FRAME CAPTURE");
         //Turn it on!
         Module.saveFrame(
           nextProps.region,
