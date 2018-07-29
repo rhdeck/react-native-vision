@@ -1,5 +1,5 @@
 import React from "react";
-import { CameraConsumer } from "./view";
+import { RNVCameraConsumer } from "./view";
 import Region from "./region";
 import PropTypes from "prop-types";
 const CameraRegion = props => {
@@ -7,7 +7,7 @@ const CameraRegion = props => {
     <Region {...{ ...props, children: null }}>
       {regionInfo => {
         return (
-          <CameraConsumer>
+          <RNVCameraConsumer>
             {value => {
               const newValue = {
                 ...regionInfo,
@@ -16,7 +16,7 @@ const CameraRegion = props => {
               };
               return props.children(newValue);
             }}
-          </CameraConsumer>
+          </RNVCameraConsumer>
         );
       }}
     </Region>
@@ -70,8 +70,8 @@ const calculateRectangles = data => {
   }
   const style = {
     position: "absolute",
-    width: (data.width / subRectangle.width * 100).toFixed(2) + "%",
-    height: (data.height / subRectangle.height * 100).toFixed(2) + "%",
+    width: ((data.width / subRectangle.width) * 100).toFixed(2) + "%",
+    height: ((data.height / subRectangle.height) * 100).toFixed(2) + "%",
     left:
       (
         ((data.x - subRectangle.x) / subRectangle.width - subRectangle.outerX) *
