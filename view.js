@@ -69,5 +69,5 @@ RNVision.defaultProps = {
 RNVision.propTypes = {
   gravity: PropTypes.string.isRequired
 };
-export { RNVision as RNVCameraView, RNVCameraConsumer };
+export { RNVision as RNVCameraView, CameraConsumer as RNVCameraConsumer };
 export default RNVision;
