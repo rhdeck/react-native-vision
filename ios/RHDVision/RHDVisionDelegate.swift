@@ -627,7 +627,7 @@ func convertFeatureValue(_ v:MLFeatureValue) -> (String, Any?) {
             let k = UUID().uuidString
             multiArrays[k] = m
             o = k
-        }
+        }/* - commented for iOS 11 */
     case .sequence:
         //Not sure what to do with this
         ts = "sequence"
@@ -644,6 +644,7 @@ func convertFeatureValue(_ v:MLFeatureValue) -> (String, Any?) {
         } else {
             // Fallback on earlier versions
         }
+ /**/
     }
     return (ts, o)
 }

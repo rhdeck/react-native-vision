@@ -3,7 +3,7 @@ import Delegate from "./module";
 import RNVImageView from "./imageview";
 import { RNVisionProvider, RNVisionConsumer } from "./wrapper";
 import RNVRegion from "./region";
-import RNVCameraRegion from "./cameraregion";
+import { RNVCameraRegion, calculateRectangles } from "./cameraregion";
 export {
   RNVCameraView,
   Delegate,
@@ -12,5 +12,6 @@ export {
   RNVImageView,
   RNVRegion,
   RNVCameraRegion,
-  RNVCameraConsumer
+  RNVCameraConsumer,
+  calculateRectangles
 };

@@ -23,7 +23,9 @@ const CameraRegion = props => {
   );
 };
 const calculateRectangles = data => {
+  if (!data) return null;
   if (!data.viewPortDimensions) return null;
+  if (!data.imageDimensions) return null;
   const vpRatio =
     data.viewPortDimensions.width / data.viewPortDimensions.height;
   const iRatio = data.imageDimensions.width / data.imageDimensions.height;
@@ -91,3 +93,4 @@ CameraRegion.propTypes = {
   children: PropTypes.func.isRequired
 };
 export default CameraRegion;
+export { CameraRegion, calculateRectangles };
