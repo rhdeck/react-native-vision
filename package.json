@@ -1,6 +1,6 @@
 {
   "name": "react-native-vision",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "React Native module for enhanced camera and vision in iOS",
   "main": "index.js",
   "scripts": {
