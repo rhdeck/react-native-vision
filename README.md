@@ -19,7 +19,7 @@ The package exports a number of components to facilitate the vision process. Not
 
 ```javascript
 <RNVisionProvider isStarted={true}>
-<RNVDefaultRegion classifiers={[url: this.state.FileUrlOfClassifier, max: 5]}>
+<RNVDefaultRegion classifiers={[{url: this.state.FileUrlOfClassifier, max: 5}]}>
 {({classifications})=>{
   return (
     <Text>
