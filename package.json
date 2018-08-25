@@ -24,7 +24,10 @@
   },
   "isSwift": true,
   "devDependencies": {
-    "react-native-swift-bridge": "^2.1.0",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-swift-bridge": "^2.1.0"
+  },
+  "peerDependencies": {
+    "react-native-camera-ios-enable": "^1.0.1"
   }
 }
