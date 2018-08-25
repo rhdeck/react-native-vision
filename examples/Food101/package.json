@@ -1,0 +1,32 @@
+{
+  "name": "Food101",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@babel/core": "^7.0.0-beta.47",
+    "babel-core": "^7.0.0-beta.47",
+    "react": "16.3.1",
+    "react-native": "0.55.4",
+    "react-native-camera-ios-enable": "^1.0.1",
+    "react-native-coreml": "^1.2.0",
+    "react-native-fs": "^2.11.15",
+    "react-native-swift": "^1.2.1",
+    "react-native-vision": "^1.2.0"
+  },
+  "devDependencies": {
+    "babel-jest": "23.4.2",
+    "babel-preset-react-native": "4.0.0",
+    "jest": "23.5.0",
+    "prettier": "^1.14.2",
+    "react-native-fix-xcode-10": "rhdeck/react-native-fix-xcode-10",
+    "react-test-renderer": "16.4.1"
+  },
+  "jest": {
+    "preset": "react-native"
+  },
+  "isSwift": true
+}
