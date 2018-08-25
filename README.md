@@ -15,7 +15,20 @@ react-native link
 
 # Reference
 
-the package exports a number of components
+The package exports a number of components to facilitate the vision process. Note that the `<RNVisionProvider />` needs to be ancestors to any others in the tree. So a simple single-classifier using dominant image would look something like:
+
+```javascript
+<RNVisionProvider isStarted={true}>
+<RNVDefaultRegion classifiers={[url: this.state.FileUrlOfClassifier, max: 5]}>
+{({classifications})=>{
+  return (
+    <Text>
+      {classifications[this.state.FileUrlOfClassifier][0].label}
+    </Text>
+}}
+</RNVDefaultRegion>
+</RNVisionProvider>
+```
 
 ## RNVisionProvider
 
@@ -48,7 +61,7 @@ Consumer partner of `RNVisionProvider`. Must be its descendant in the node tree.
 
 ### Props
 
-- `region`: ID of the region
+- `region`: ID of the region (**Note** the default region, which is the whole frame, has an id of `""` - blank.)
 - `classifiers`: CoreML classifiers passed as file URLs to the classifier mlmodelc itself. Array
 - `generators`: CoreML image generators passed as file URLs to the classifier mlmodelc itself. Array
 - `generators`: CoreML models that generate a collection of output values passed as file URLs to the classifier mlmodelc itself.
@@ -62,6 +75,18 @@ Consumer partner of `RNVisionProvider`. Must be its descendant in the node tree.
 - `confidence`: If set, the confidence that the object identified as `key` is actually at this location. Used by tracked objects API of iOS Vision. Sometimes null.
 - `classifications`: Collection, keyed by the file URL of the classifier passed in props, of collections of labels and probabilities. (e.g. `{"file:///path/to/myclassifier.mlmodelc": {"label1": 0.84, "label2": 0.84}}`)
 - `genericResults`: Collection of generic results returned from generic models passed in via props to the region
+
+## RNVDefaultRegion
+
+Convenience region that references the full frame. Same props as `RNVRegion`, except `region` is always set to `""` - the full frame. Useful for simple style transfers or "dominant image" classifiers.
+
+### Props
+
+Same as `RNVRegion`, with the exception that `region` is forced to `""`
+
+### Render Prop Members
+
+Same as `RNVRegion`, with the note that `key` will always be `""`
 
 ## RNVCameraView
 
@@ -108,3 +133,7 @@ View for displaying output of image generators. Link it to , and the resulting i
 - `id`: the ID of an image generator model attached to a region. Usually is the `file:///` URL of the .mlmodelc.
 
 Otherwise conforms to Image and View API.
+
+```
+
+```

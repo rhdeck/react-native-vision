@@ -212,4 +212,7 @@ Region.propTypes = {
   onFrameCaptured: PropTypes.func,
   frameDisposition: PropTypes.string
 };
+
+const RNVDefaultRegion = props => <Region {...props} region="" />;
 export default Region;
+export { Region as RNVRegion, RNVDefaultRegion };
