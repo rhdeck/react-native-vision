@@ -14,7 +14,9 @@ import {
   setImageDimensionListener,
   removeImageDimensionListener
 } from "./module";
-const { Provider, Consumer: RNVisionConsumer } = createContext(null);
+const { Provider, Consumer: RNVisionConsumer } = createContext({
+  regions: { "": null }
+});
 class RNVisionProvider extends Component {
   state = {
     isStarted: false,
