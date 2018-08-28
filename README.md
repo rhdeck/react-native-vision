@@ -20,25 +20,25 @@ To help get started with interesting tracking, the package includes a face detec
 ```javascript
 <FacesProvider isCameraFront={false} classifier={file_url_of_classifier}>
   <SafeAreaView>
-    <RNVCameraView gravity={this.state.gravity} style={styles.camerastyle}>
+    <RNVCameraView>
       <FacesConsumer>
         {({ faces }) =>
           faces &&
-          Object.entries(faces).map(([k, regionInfo]) => (
-            <Face key={"region-" + k} isCamera={true} {...regionInfo}>
+          Object.keys(faces).map(k => (
+            <Face key={k} isCamera={true} faceID={k}>
               {({ style, face, faceConfidence }) => (
                 <View
                   style={{
                     ...style,
                     borderColor: "green",
                     borderWidth: 1,
-                    backgroundColor: face === "nic" ? "#FF000030" : "#00000000"
+                    backgroundColor: "#FF000030"
                   }}
                 >
                   {face && [
                     <Text key="facelabel">{face}</Text>,
                     <Text key="faceconfidence">
-                      {parseFloat(faceConfidence).toFixed(2)}
+                      {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
                     </Text>
                   ]}
                 </View>
@@ -115,14 +115,14 @@ The package exports a number of components to facilitate the vision process. Not
 
 ```javascript
 <RNVisionProvider isStarted={true}>
-<RNVDefaultRegion classifiers={[{url: this.state.FileUrlOfClassifier, max: 5}]}>
-{({classifications})=>{
-  return (
-    <Text>
-      {classifications[this.state.FileUrlOfClassifier][0].label}
-    </Text>
-}}
-</RNVDefaultRegion>
+  <RNVDefaultRegion classifiers={[{url: this.state.FileUrlOfClassifier, max: 5}]}>
+  {({classifications})=>{
+    return (
+      <Text>
+        {classifications[this.state.FileUrlOfClassifier][0].label}
+      </Text>
+  }}
+  </RNVDefaultRegion>
 </RNVisionProvider>
 ```
 
