@@ -124,7 +124,7 @@ class Region extends Component {
       Object.keys(prevState.bottlenecks).forEach(k => {
         //Look for no-longer operative bottlenecks and remove them
         if (typeof nextProps.classifiers[k] == "undefined") {
-          Module.removeML(nextProps.id, k);
+          Module.removeML(nextProps.region, k);
         }
       });
       ret.bottlenecks = nextProps.bottlenecks;
@@ -136,6 +136,23 @@ class Region extends Component {
   }
   componentDidMount() {
     this.manageTodo();
+  }
+  componentWillUnmount() {
+    try {
+      Module.removeSaveFrame(this.props.region);
+    } catch (e) {}
+    this.state.classifiers &&
+      this.state.classifiers.map(u =>
+        Module.removeML(this.props.region, u.url)
+      );
+    this.state.generators &&
+      this.state.generators.map(u => Module.removeML(this.props.region, u));
+    this.state.generics &&
+      this.state.generics.map(u => Module.removeML(this.props.region, url));
+    this.state.bottlenecks &&
+      Object.keys(this.state.bottlenecks).map(u =>
+        Module.removeML(this.props.region, u)
+      );
   }
   manageTodo() {
     if (this.state.todos) {
