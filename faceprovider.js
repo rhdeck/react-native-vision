@@ -141,7 +141,7 @@ const FacesProvider = props => {
   );
 };
 FacesProvider.propTypes = {
-  ...RNVisionProvider.propTypes,
+  ...FaceTracker.propTypes,
   classifier: PropTypes.string
 };
 FacesProvider.defaultProps = {
@@ -150,7 +150,13 @@ FacesProvider.defaultProps = {
   interval: 500
 };
 const Face = props =>
-  props.isCamera ? (
+  props.faceID ? (
+    <FaceConsumer>
+      {({ faces: { faceID } }) =>
+        faceID ? <Face {...faceID} {...props} faceID={null} /> : null
+      }
+    </FaceConsumer>
+  ) : props.isCameraView ? (
     <RNVisionConsumer>
       {({ imageDimensions, isCameraFront }) => (
         <RNVCameraConsumer>
@@ -174,5 +180,13 @@ const Face = props =>
   ) : (
     props.children({ ...props, children: null })
   );
+Face.propTypes = {
+  faceID: PropTypes.string,
+  isCameraView: PropTypes.boolean
+};
+Face.defaultProps = {
+  faceID: null,
+  isCameraView: false
+};
 
 export { FacesProvider, FacesConsumer, Face };
