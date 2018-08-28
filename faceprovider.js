@@ -151,11 +151,11 @@ FacesProvider.defaultProps = {
 };
 const Face = props =>
   props.faceID ? (
-    <FaceConsumer>
-      {({ faces: { faceID } }) =>
-        faceID ? <Face {...faceID} {...props} faceID={null} /> : null
+    <FacesConsumer>
+      {({ faces: { [props.faceID]: faceObj } }) =>
+        faceObj ? <Face {...faceObj} {...props} faceID={null} /> : null
       }
-    </FaceConsumer>
+    </FacesConsumer>
   ) : props.isCameraView ? (
     <RNVisionConsumer>
       {({ imageDimensions, isCameraFront }) => (
@@ -182,7 +182,7 @@ const Face = props =>
   );
 Face.propTypes = {
   faceID: PropTypes.string,
-  isCameraView: PropTypes.boolean
+  isCameraView: PropTypes.bool
 };
 Face.defaultProps = {
   faceID: null,
