@@ -103,7 +103,9 @@ Can be instantiated by spread-propping the output of a single face value from `<
 
 ### Render Props
 
-This largely passes throught the members of the element that you could get from the `faces` collection from `FaceConsumer`, with the additional consideration that `x`, `y`, `height`, `width` will be adjusted to the `RNCameraView` viewport when `isCameraView` is activated.
+This largely passes throught the members of the element that you could get from the `faces` collection from `FaceConsumer`, with the additional consideration that when `isCameraView` is set,
+
+- `style`: A spreadable set of styling members to position the rectangle, in the same style as a `RNVCameraRegion`
 
 If `faceID` is provided but does not map to a member of the `faces` collection, the function will return null.
 
