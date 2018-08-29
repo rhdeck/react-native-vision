@@ -33,14 +33,15 @@ class FaceInfo extends Component {
   }
   componentWillUnmount() {
     if (this.timer) clearInterval(this.timer);
+    if (this.faceTimer) clearInterval(this.faceTimer);
   }
-  timer = null;
+  faceTimer = null;
   myFaceInfo = {};
   setFaceInfo(k, info) {
     info.lastUpdate = Date.now();
     this.myFaceInfo[k] = info;
-    if (!this.timer)
-      this.timer = setTimeout(() => {
+    if (!this.faceTimer)
+      this.faceTimer = setTimeout(() => {
         if (this.myFaceInfo) {
           this.setState(
             ({ faces }) => {
@@ -54,8 +55,8 @@ class FaceInfo extends Component {
             }
           );
         }
-        if (this.timer) clearTimeout(this.timer);
-        this.timer = null;
+        if (this.faceTimer) clearTimeout(this.faceTimer);
+        this.faceTimer = null;
       }, this.props.updateInterval);
   }
   render() {
