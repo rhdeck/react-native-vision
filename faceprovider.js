@@ -1,7 +1,7 @@
 import React, { createContext, Component } from "react";
 import { PropTypes } from "prop-types";
 import FaceTracker from "./facetracker";
-import { RNVisionProvider, RNVisionConsumer } from "./wrapper";
+import { RNVisionConsumer } from "./wrapper";
 import { RNVRegion } from "./region";
 import { calculateRectangles } from "./cameraregion";
 import { RNVCameraConsumer } from "./view";
@@ -34,13 +34,13 @@ class FaceInfo extends Component {
   componentWillUnmount() {
     if (this.timer) clearInterval(this.timer);
   }
-  timers = {};
+  timer = null;
   myFaceInfo = {};
   setFaceInfo(k, info) {
     info.lastUpdate = Date.now();
     this.myFaceInfo[k] = info;
-    if (!this.timers[k])
-      this.timers[k] = setTimeout(() => {
+    if (!this.timer)
+      this.timer = setTimeout(() => {
         if (this.myFaceInfo) {
           this.setState(
             ({ faces }) => {
@@ -54,8 +54,8 @@ class FaceInfo extends Component {
             }
           );
         }
-        if (this.timers[k]) clearTimeout(this.timers[k]);
-        this.timers[k] = null;
+        if (this.timer) clearTimeout(this.timer);
+        this.timer = null;
       }, this.props.updateInterval);
   }
   render() {
@@ -66,30 +66,8 @@ class FaceInfo extends Component {
     );
   }
 }
-class TickTock extends Component {
-  state = { tick: true };
-  componentDidMount() {
-    this.timer = setInterval(() => {
-      this.setState(({ tick }) => {
-        console.log("tock", tick);
-        return { tick: !tick };
-      });
-    }, this.props.interval);
-  }
-  componentWillUnmount() {
-    if (this.timer) clearInterval(this.timer);
-  }
-  render() {
-    return this.props.children(this.state.tick);
-  }
-}
-TickTock.defaultProps = {
-  interval: 300
-};
 const FacesProvider = props => {
   return (
-    // <TickTock>
-    //   {tick => (
     <FaceTracker {...props}>
       <FaceInfo timeout={props.interval} updateInterval={props.updateInterval}>
         {({ setFaceInfo }) => (
@@ -158,8 +136,6 @@ const FacesProvider = props => {
         )}
       </FaceInfo>
     </FaceTracker>
-    //   )}
-    // </TickTock>
   );
 };
 FacesProvider.propTypes = {
@@ -212,5 +188,4 @@ Face.defaultProps = {
   faceID: null,
   isCameraView: false
 };
-
 export { FacesProvider, FacesConsumer, Face };
