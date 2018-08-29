@@ -8,36 +8,57 @@ import { RNVCameraConsumer } from "./view";
 const { Provider, Consumer: FacesConsumer } = createContext({ faces: {} });
 class FaceInfo extends Component {
   state = {
-    setFaceInfo: this.setFaceInfo.bind(this),
     faces: {}
   };
   componentDidMount() {
     this.timer = setInterval(() => {
+      this.checkOldFaces();
+    }, this.props.timeout);
+  }
+  checkOldFaces() {
+    try {
       const keys = Object.entries(this.state.faces)
-        .filter(([key, { lastUpdate }]) => lastUpdate < Date.now() - 2000)
+        .filter(
+          ([key, { lastUpdate }]) =>
+            lastUpdate < Date.now() - this.props.timeout
+        )
         .map(([key, val]) => key);
-      if (keys.length)
+      if (keys.length) {
         this.setState(({ faces }) => {
           keys.forEach(k => delete faces[k]);
           return { faces: { ...faces } };
         });
-    }, 2000);
+      }
+    } catch (e) {}
   }
   componentWillUnmount() {
     if (this.timer) clearInterval(this.timer);
   }
+  timers = {};
   setFaceInfo(k, info) {
-    setTimeout(() => {
-      this.setState(({ faces }) => {
-        const lastUpdate = Date.now();
-        return {
-          faces: { ...faces, [k]: { ...faces[k], ...info, lastUpdate } }
-        };
-      });
-    }, 0);
+    if (!this.timers[k])
+      this.timers[k] = setTimeout(() => {
+        this.setState(
+          ({ faces }) => {
+            const lastUpdate = Date.now();
+            return {
+              faces: { ...faces, [k]: { ...faces[k], ...info, lastUpdate } }
+            };
+          },
+          () => {
+            this.checkOldFaces();
+          }
+        );
+        if (this.timers[k]) clearTimeout(this.timers[k]);
+        this.timers[k] = null;
+      }, 100);
   }
   render() {
-    return <Provider {...this.props} value={this.state} />;
+    return (
+      <Provider {...this.props} value={this.state}>
+        {this.props.children({ setFaceInfo: this.setFaceInfo.bind(this) })}
+      </Provider>
+    );
   }
 }
 class TickTock extends Component {
@@ -65,75 +86,71 @@ const FacesProvider = props => {
     // <TickTock>
     //   {tick => (
     <FaceTracker {...props}>
-      <FaceInfo>
-        <RNVisionConsumer>
-          {data => {
-            if (!data) return null;
-            const regions = data.regions;
-            return [
-              regions
-                ? [
-                    ...Object.keys(regions)
-                      .filter(k => k.length)
-                      .map(k => {
-                        return (
-                          <RNVRegion
-                            key={"raw-region-" + k}
-                            region={k}
-                            classifiers={
-                              props.classifier && [
-                                { url: props.classifier, max: 5 }
-                              ]
-                            }
-                          >
-                            {({ classifications }) => (
-                              <FacesConsumer>
-                                {({ setFaceInfo }) => {
-                                  if (typeof classifications == "object") {
-                                    const fk = Object.keys(
-                                      classifications
-                                    ).shift();
-                                    if (!fk) {
-                                      setFaceInfo(k, {
-                                        region: k,
-                                        ...regions[k]
-                                      });
-                                    } else {
-                                      const firstClassifier =
-                                        classifications[fk];
-                                      setFaceInfo(k, {
-                                        region: k,
-                                        ...regions[k],
-                                        face: [...firstClassifier].shift()
-                                          .label,
-                                        faceConfidence: [
-                                          ...firstClassifier
-                                        ].shift().confidence,
-                                        faces: firstClassifier
-                                      });
-                                    }
-                                  } else {
+      <FaceInfo timeout={500}>
+        {({ setFaceInfo }) => (
+          <RNVisionConsumer>
+            {data => {
+              if (!data) return null;
+              const regions = data.regions;
+              return [
+                regions
+                  ? [
+                      ...Object.keys(regions)
+                        .filter(k => k.length)
+                        .map(k => {
+                          return (
+                            <RNVRegion
+                              key={"raw-region-" + k}
+                              region={k}
+                              classifiers={
+                                props.classifier && [
+                                  { url: props.classifier, max: 5 }
+                                ]
+                              }
+                            >
+                              {({ classifications }) => {
+                                if (typeof classifications == "object") {
+                                  const fk = Object.keys(
+                                    classifications
+                                  ).shift();
+                                  if (!fk) {
                                     setFaceInfo(k, {
                                       region: k,
                                       ...regions[k]
                                     });
+                                  } else {
+                                    const firstClassifier = classifications[fk];
+                                    setFaceInfo(k, {
+                                      region: k,
+                                      ...regions[k],
+                                      face: [...firstClassifier].shift().label,
+                                      faceConfidence: [
+                                        ...firstClassifier
+                                      ].shift().confidence,
+                                      faces: firstClassifier
+                                    });
                                   }
-                                }}
-                              </FacesConsumer>
-                            )}
-                          </RNVRegion>
-                        );
-                      })
-                  ]
-                : null,
-              typeof props.children == "function" ? (
-                <FacesConsumer>{props.children}</FacesConsumer>
-              ) : (
-                props.children
-              )
-            ];
-          }}
-        </RNVisionConsumer>
+                                } else {
+                                  setFaceInfo(k, {
+                                    region: k,
+                                    ...regions[k]
+                                  });
+                                }
+                              }}
+                            </RNVRegion>
+                          );
+                        })
+                    ]
+                  : null,
+                typeof props.children == "function" ? (
+                  <FacesConsumer>{props.children}</FacesConsumer>
+                ) : (
+                  props.children
+                )
+              ];
+            }}
+          </RNVisionConsumer>
+        )}
       </FaceInfo>
     </FaceTracker>
     //   )}
