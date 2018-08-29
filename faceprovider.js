@@ -189,4 +189,45 @@ Face.defaultProps = {
   faceID: null,
   isCameraView: false
 };
-export { FacesProvider, FacesConsumer, Face };
+
+const Faces = props => (
+  <FacesConsumer>
+    {({ faces }) => {
+      if (!faces) return null;
+      if (typeof props.children !== "function")
+        throw new Error("Faces requires children to be a function");
+      return (
+        <RNVCameraConsumer>
+          {value =>
+            value ? (
+              <RNVisionConsumer>
+                {({ imageDimensions, isCameraFront }) =>
+                  Object.entries(faces).map(([k, obj]) => {
+                    return props.children({
+                      ...obj,
+                      key: k,
+                      style: calculateRectangles({
+                        ...obj,
+                        ...value,
+                        imageDimensions,
+                        isCameraFront
+                      })
+                    });
+                  })
+                }
+              </RNVisionConsumer>
+            ) : (
+              Object.entries(faces).map(([k, obj]) =>
+                props.children({
+                  ...obj,
+                  key: k
+                })
+              )
+            )
+          }
+        </RNVCameraConsumer>
+      );
+    }}
+  </FacesConsumer>
+);
+export { FacesProvider, FacesConsumer, Face, Faces };
