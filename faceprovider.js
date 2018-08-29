@@ -35,23 +35,28 @@ class FaceInfo extends Component {
     if (this.timer) clearInterval(this.timer);
   }
   timers = {};
+  myFaceInfo = {};
   setFaceInfo(k, info) {
+    info.lastUpdate = Date.now();
+    this.myFaceInfo[k] = info;
     if (!this.timers[k])
       this.timers[k] = setTimeout(() => {
-        this.setState(
-          ({ faces }) => {
-            const lastUpdate = Date.now();
-            return {
-              faces: { ...faces, [k]: { ...faces[k], ...info, lastUpdate } }
-            };
-          },
-          () => {
-            this.checkOldFaces();
-          }
-        );
+        if (this.myFaceInfo) {
+          this.setState(
+            ({ faces }) => {
+              return {
+                faces: { ...faces, ...this.myFaceInfo }
+              };
+            },
+            () => {
+              this.myFaceInfo = {};
+              this.checkOldFaces();
+            }
+          );
+        }
         if (this.timers[k]) clearTimeout(this.timers[k]);
         this.timers[k] = null;
-      }, 100);
+      }, this.props.updateInterval);
   }
   render() {
     return (
@@ -86,7 +91,7 @@ const FacesProvider = props => {
     // <TickTock>
     //   {tick => (
     <FaceTracker {...props}>
-      <FaceInfo timeout={500}>
+      <FaceInfo timeout={props.interval} updateInterval={props.updateInterval}>
         {({ setFaceInfo }) => (
           <RNVisionConsumer>
             {data => {
@@ -159,12 +164,14 @@ const FacesProvider = props => {
 };
 FacesProvider.propTypes = {
   ...FaceTracker.propTypes,
-  classifier: PropTypes.string
+  classifier: PropTypes.string,
+  updateInterval: PropTypes.number
 };
 FacesProvider.defaultProps = {
   isCameraFront: true,
   isStarted: true,
-  interval: 500
+  interval: 500,
+  updateInterval: 100
 };
 const Face = props =>
   props.faceID ? (
