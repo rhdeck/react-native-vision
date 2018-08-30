@@ -21,32 +21,27 @@ To help get started with interesting tracking, the package includes a face detec
 <FacesProvider isCameraFront={false} classifier={file_url_of_classifier}>
   <SafeAreaView>
     <RNVCameraView>
-      <FacesConsumer>
-        {({ faces }) =>
-          faces &&
-          Object.keys(faces).map(k => (
-            <Face key={k} isCamera={true} faceID={k}>
-              {({ style, face, faceConfidence }) => (
-                <View
-                  style={{
-                    ...style,
-                    borderColor: "green",
-                    borderWidth: 1,
-                    backgroundColor: "#FF000030"
-                  }}
-                >
-                  {face && [
-                    <Text key="facelabel">{face}</Text>,
-                    <Text key="faceconfidence">
-                      {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
-                    </Text>
-                  ]}
-                </View>
-              )}
-            </Face>
-          ))
-        }
-      </FacesConsumer>
+      <Faces>
+        {({ face, faceConfidence, style }) => {
+          ({ style, face, faceConfidence }) => (
+            <View
+              style={{
+                ...style,
+                borderColor: "green",
+                borderWidth: 1,
+                backgroundColor: "#FF000030"
+              }}
+            >
+              {face && [
+                <Text key="facelabel">{face}</Text>,
+                <Text key="faceconfidence">
+                  {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
+                </Text>
+              ]}
+            </View>
+          );
+        }}
+      </Faces>
     </RNVCameraView>
     )
   </SafeAreaView>
@@ -95,6 +90,37 @@ Note that when there is no classifier specified, `faces`, `face` and `faceConfid
 
 Render prop generator to provision information about a single detected face.
 Can be instantiated by spread-propping the output of a single face value from `<FacesConsumer>` or by appling a `faceID` that maps to the key of a face. Returns null if no match.
+
+### Props
+
+- `faceID`: ID of the face (corresponding to the key of the `faces` object in `FacesConsumer`)
+
+### Render Prop Members
+
+- `region`: The key associated with this object (e.g. `faces[k].region === k`)
+- `x`, `y`, `height`, `width`: Position and size of the bounding box for the detected face. **Note** These are adjusted for the visible camera view when you are rendering from that context.
+- `faces`: Array of top-5 results from face classifier, with keys `label` and `confidence`
+- `face`: Label of top-scoring result from classifier (e.g. the face this is most likely to be)
+- `faceConfidence`: Confidence score of top-scoring result above.
+  **Note** These arguments are the sam
+
+## Faces
+
+A render-prop generator to provision information about all detected faces. Will map all detected faces into `<Face>` components and apply the `children` prop to each, so you have one function to generate all your faces. Designed to be similar to `FlatMap` implentation.
+
+### Required Provider Context
+
+This component must be a descendant of a `<FacesProvider>`
+
+### Props
+
+None
+
+### Render Prop Members
+
+Same as `<Face>` above, but output will be mapped across all detected faces.
+
+Example of use is in the primary Face Recognizer demo code above.
 
 ### Props
 
