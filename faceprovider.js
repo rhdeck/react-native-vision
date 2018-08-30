@@ -194,7 +194,9 @@ const Faces = props => (
     {({ faces }) =>
       faces &&
       Object.keys(faces).map(k => (
-        <Face faceID={k}>{value => props.children({ key: k, ...value })}</Face>
+        <Face faceID={k} key={k}>
+          {value => props.children({ key: k, ...value })}
+        </Face>
       ))
     }
   </FacesConsumer>
