@@ -22,25 +22,23 @@ To help get started with interesting tracking, the package includes a face detec
   <SafeAreaView>
     <RNVCameraView>
       <Faces>
-        {({ face, faceConfidence, style }) => {
-          ({ style, face, faceConfidence }) => (
-            <View
-              style={{
-                ...style,
-                borderColor: "green",
-                borderWidth: 1,
-                backgroundColor: "#FF000030"
-              }}
-            >
-              {face && [
-                <Text key="facelabel">{face}</Text>,
-                <Text key="faceconfidence">
-                  {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
-                </Text>
-              ]}
-            </View>
-          );
-        }}
+        {({ face, faceConfidence, style }) => (
+          <View
+            style={{
+              ...style,
+              borderColor: "green",
+              borderWidth: 1,
+              backgroundColor: "#FF000030"
+            }}
+          >
+            {face && [
+              <Text key="facelabel">{face}</Text>,
+              <Text key="faceconfidence">
+                {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
+              </Text>
+            ]}
+          </View>
+        )}
       </Faces>
     </RNVCameraView>
     )
@@ -56,8 +54,9 @@ Context Provider that extends `<RNVisionProvider />` to detect, track, and ident
 
 Inherits from `<RNVisionProvider />`, plus:
 
-- `interval`: How frequently to run the face detection re-check. (Basically lower values here keeps the face tracking more accurate) **Default**: 500
+- `interval`: How frequently (in ms) to run the face detection re-check. (Basically lower values here keeps the face tracking more accurate) **Default**: 500
 - `classifier`: File URL to compiled MLModel (e.g. mlmodelc) that will be applied to detected faces
+- `updateInterval`: How frequently (in ms) to update the detected faces - position, classified face, etc. Smaller values will mean smoother animation, but at the price of processor intensity. **Default**: 100
 
 ### Example
 
