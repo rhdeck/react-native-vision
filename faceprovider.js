@@ -157,77 +157,49 @@ const Face = props =>
         faceObj ? <Face {...faceObj} {...props} faceID={null} /> : null
       }
     </FacesConsumer>
-  ) : props.isCameraView ? (
-    <RNVisionConsumer>
-      {({ imageDimensions, isCameraFront }) => (
-        <RNVCameraConsumer>
-          {value => {
-            const newValue = {
-              ...props,
-              ...value,
-              style: calculateRectangles({
+  ) : (
+    <RNVCameraConsumer>
+      {value =>
+        !!value ? (
+          <RNVisionConsumer>
+            {({ imageDimensions, isCameraFront }) => {
+              const newValue = {
                 ...props,
                 ...value,
-                imageDimensions,
-                isCameraFront
-              }),
-              children: null
-            };
-            return props.children(newValue);
-          }}
-        </RNVCameraConsumer>
-      )}
-    </RNVisionConsumer>
-  ) : (
-    props.children({ ...props, children: null })
+                style: calculateRectangles({
+                  ...props,
+                  ...value,
+                  imageDimensions,
+                  isCameraFront
+                }),
+                children: null
+              };
+              return props.children(newValue);
+            }}
+          </RNVisionConsumer>
+        ) : (
+          props.children({ ...props, children: null })
+        )
+      }
+    </RNVCameraConsumer>
   );
 Face.propTypes = {
-  faceID: PropTypes.string,
-  isCameraView: PropTypes.bool
+  faceID: PropTypes.string
 };
 Face.defaultProps = {
-  faceID: null,
-  isCameraView: false
+  faceID: null
 };
-
 const Faces = props => (
   <FacesConsumer>
-    {({ faces }) => {
-      if (!faces) return null;
-      if (typeof props.children !== "function")
-        throw new Error("Faces requires children to be a function");
-      return (
-        <RNVCameraConsumer>
-          {value =>
-            value ? (
-              <RNVisionConsumer>
-                {({ imageDimensions, isCameraFront }) =>
-                  Object.entries(faces).map(([k, obj]) => {
-                    return props.children({
-                      ...obj,
-                      key: k,
-                      style: calculateRectangles({
-                        ...obj,
-                        ...value,
-                        imageDimensions,
-                        isCameraFront
-                      })
-                    });
-                  })
-                }
-              </RNVisionConsumer>
-            ) : (
-              Object.entries(faces).map(([k, obj]) =>
-                props.children({
-                  ...obj,
-                  key: k
-                })
-              )
-            )
-          }
-        </RNVCameraConsumer>
-      );
-    }}
+    {({ faces }) =>
+      faces &&
+      Object.keys(faces).map(k => (
+        <Face faceID={k}>{value => props.children({ key: k, ...value })}</Face>
+      ))
+    }
   </FacesConsumer>
 );
+Faces.propTypes = {
+  children: PropTypes.func.isRequired
+};
 export { FacesProvider, FacesConsumer, Face, Faces };
