@@ -24,10 +24,15 @@
   },
   "isSwift": true,
   "devDependencies": {
+    "glob": "^7.1.3",
     "react-native": "*",
-    "react-native-swift-bridge": "^2.1.0"
+    "react-native-swift-bridge": "^2.1.0",
+    "xcode": "rhdeck/cordova-node-xcode"
   },
   "peerDependencies": {
     "react-native-camera-ios-enable": "^1.0.1"
+  },
+  "rnpm": {
+    "plugin": "plugin.js"
   }
 }
