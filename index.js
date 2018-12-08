@@ -7,7 +7,13 @@ import {
   CameraRegion as RNVCameraRegion,
   calculateRectangles
 } from "./cameraregion";
-import { FacesProvider, FacesConsumer, Face, Faces } from "./faceprovider";
+import {
+  FacesProvider,
+  FacesConsumer,
+  Face,
+  Faces,
+  FaceCamera
+} from "./faceprovider";
 export {
   RNVCameraView,
   Delegate,
@@ -22,5 +28,6 @@ export {
   FacesProvider,
   FacesConsumer,
   Face,
-  Faces
+  Faces,
+  FaceCamera
 };
