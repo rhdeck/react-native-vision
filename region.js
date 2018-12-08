@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { RNVisionConsumer } from "./wrapper";
 import * as Module from "./module";
+import { bundleURL } from "./RNSwiftBridge";
 class Region extends Component {
   state = {
     classifiers: null,
@@ -33,19 +34,21 @@ class Region extends Component {
     if (nextProps.classifiers != prevState.classifiers) {
       if (nextProps.classifiers)
         if (Array.isArray(nextProps.classifiers))
-          nextProps.classifiers.forEach(obj => {
-            const url = obj.url;
-            const maxCount = obj.max;
-            if (
-              prevState.classifiers &&
-              prevState.classifiers.filter(o => {
-                return o.url == url && o.max == maxCount;
-              }).length
-            )
-              return;
-            if (!ret.todos.addMLClassifiers) ret.todos.addMLClassifiers = [];
-            ret.todos.addMLClassifiers.push(obj);
-          });
+          nextProps.classifiers
+            .map(o => ({ ...o, url: fixURL(o.url) }))
+            .forEach(obj => {
+              const { url, max: maxCount } = obj;
+              if (
+                prevState.classifiers &&
+                prevState.classifiers.filter(o => {
+                  return o.url == url && o.max == maxCount;
+                }).length
+              )
+                return;
+
+              if (!ret.todos.addMLClassifiers) ret.todos.addMLClassifiers = [];
+              ret.todos.addMLClassifiers.push(obj);
+            });
         else
           Object.keys(nextProps.classifiers).forEach(k => {
             const maxCount = nextProps.classifiers[k];
@@ -55,7 +58,7 @@ class Region extends Component {
             )
               return;
             if (!ret.todos.addMLClassifiers) ret.todos.addMLClassifiers = [];
-            ret.todos.addMLClassifiers.push({ url: k, max: maxCount });
+            ret.todos.addMLClassifiers.push({ url: fixURL(k), max: maxCount });
           });
       if (prevState.classifiers)
         if (Array.isArray(prevState.classifiers))
@@ -85,20 +88,21 @@ class Region extends Component {
     if (nextProps.generators != prevState.generators) {
       if (nextProps.generators)
         if (Array.isArray(nextProps.generators))
-          nextProps.generators.forEach(obj => {
-            const url = obj.url;
-            const type = obj.type;
-            if (
-              prevState.generators &&
-              prevState.generators.filter(o => {
-                const ret = o.url == url && o.type == type;
-                return ret;
-              }).length
-            )
-              return;
-            if (!ret.todos.addMLGenerators) ret.todos.addMLGenerators = [];
-            ret.todos.addMLGenerators.push(obj);
-          });
+          nextProps.generators
+            .map(o => ({ ...o, url: fixURL(o.url) }))
+            .forEach(obj => {
+              const { url, type } = obj;
+              if (
+                prevState.generators &&
+                prevState.generators.filter(o => {
+                  const ret = o.url == url && o.type == type;
+                  return ret;
+                }).length
+              )
+                return;
+              if (!ret.todos.addMLGenerators) ret.todos.addMLGenerators = [];
+              ret.todos.addMLGenerators.push(obj);
+            });
       if (prevState.generators)
         if (Array.isArray(prevState.generators))
           prevState.generators.forEach(obj => {
@@ -160,9 +164,11 @@ class Region extends Component {
         if (typeof this[k] == "function") this[k](this.state.todos[k]);
         else console.log("No todo function for key ", k);
       });
-      this.setState({ todos: null });
+      // console .log("Running setstate from region todo");
+      //this.setState({ todos: null });
     }
   }
+  cachedDate = {};
   addMLClassifiers(classifiers) {
     classifiers.forEach(obj => {
       const url = obj.url;
@@ -172,6 +178,10 @@ class Region extends Component {
         url,
         maxCount,
         newClassifications => {
+          const now = Date.now();
+          if (now < parseInt(this.cachedDate[this.props.region + url]) + 50)
+            return;
+          console.log("RUNNING SETSTATE!!!!!");
           this.setState(({ classifications }) => {
             return {
               classifications: {
@@ -180,6 +190,7 @@ class Region extends Component {
               }
             };
           });
+          this.cachedDate[this.props.region + url] = now;
         }
       );
     });
@@ -228,6 +239,18 @@ Region.propTypes = {
   children: PropTypes.func,
   onFrameCaptured: PropTypes.func,
   frameDisposition: PropTypes.string
+};
+const fixURL = url => {
+  //ask if this is a URL
+  console.log("Checking whether this is a url", url, bundleURL);
+  if (url.includes("://")) return url;
+  if (url.endsWith(".mlmodel")) url = url + "c";
+  if (!url.endsWith(".mlmodelc")) {
+    url = url + ".mlmodelc";
+  }
+  const final = bundleURL + url;
+  console.log("Returning final", final);
+  return final;
 };
 
 const RNVDefaultRegion = props => <Region {...props} region="" />;
