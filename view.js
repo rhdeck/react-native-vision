@@ -4,7 +4,7 @@ import { RNVisionConsumer } from "./wrapper";
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import Region from "./region";
-const NativeVision = requireNativeComponent("RHDVisionCameraView", RNVision);
+import { RHDVisionCameraView } from "./RNSwiftBridge";
 const { Provider, Consumer: CameraConsumer } = React.createContext();
 class RNVision extends Component {
   state = {
@@ -31,7 +31,7 @@ class RNVision extends Component {
           this.onLayout(e);
         }}
       >
-        <NativeVision {...{ ...this.props, children: null }} />
+        <RHDVisionCameraView {...{ ...this.props, children: null }} />
         <Provider
           value={{
             viewPortDimensions: {

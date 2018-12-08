@@ -16,8 +16,8 @@ enum visionErrors:Error {
 var session:AVCaptureSession?
 // Don't know if I want this typealias VNReqMaker = () -> VNRequest
 @objc(RHDVisionModule)
-class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
-    static var instance:RHDVisionDelegate?
+class RHDVisionModule: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate {
+    static var instance:RHDVisionModule?
     //MARK: Private Collections
     var sr:[String: [String:VNRequest]] = [:] //Sequence Requests
     var srg:[String:[String:VNRGenerator]] = [:] // Sequence Request Generators
@@ -37,20 +37,20 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
     //MARK: Private Methods
     override init() {
         super.init()
-        RHDVisionDelegate.instance = self
+        RHDVisionModule.instance = self
         multiArrays = [:] // Prevent memory leaks
         //Kill previous connections
-        if let i = RHDVisionDelegate.instance, let thispl = i.pl {
+        if let i = RHDVisionModule.instance, let thispl = i.pl {
             thispl.session.outputs.forEach() { o in
                 if let os = o as? AVCaptureVideoDataOutput , let _ = os.sampleBufferDelegate {
                     thispl.session.removeOutput(os)
                 }
             }
         }
-        RHDVisionDelegate.instance = self
+        RHDVisionModule.instance = self
     }
     override class func requiresMainQueueSetup() -> Bool {
-        return false
+        return true
     }
     //MARK: Lifecycle management
     
@@ -75,7 +75,7 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
             s.startRunning()
             session = s
             let o = AVCaptureVideoDataOutput()
-            o.setSampleBufferDelegate(self, queue: DispatchQueue(label:"RHDVisionDelegateQueue"))
+            o.setSampleBufferDelegate(self, queue: DispatchQueue(label:"RHDVisionModuleQueue"))
             o.alwaysDiscardsLateVideoFrames = true
             o.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
             s.addOutput(o)
@@ -560,8 +560,14 @@ class RHDVisionDelegate: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDe
         sendEvent(withName: "RNVMetaData", body:["string": stringValue])
     }
     //MARK: RCTEventEmitter Support
+    
     override func supportedEvents() -> [String]! {
-        return ["RNVision", "RNVMetaData", "RNVisionImageDim"]
+        return ["RNVision", "RNVMetaData", "RNVisionImageDim"] //@RNSEvents
+    }
+    //MARK: Constants
+    //@RNSConstants bundlePath bundleURL
+     override func constantsToExport() -> [AnyHashable : Any]! {
+        return ["bundlePath": Bundle.main.bundlePath, "bundleURL": Bundle.main.bundleURL.absoluteString]
     }
 }
 //MARK: Orientation Conversion
@@ -750,6 +756,7 @@ func slicePixelBuffer(_ cvp: CVPixelBuffer, toRect: CGRect) -> CVPixelBuffer? {
     let cropY = Int(toRect.origin.y * CGFloat(sourceHeight))
     return resizePixelBuffer(cvp, cropX: cropX, cropY: cropY, cropWidth: cropWidth, cropHeight: cropHeight, scaleWidth: cropHeight, scaleHeight: cropWidth)
 }
+
 //MARK: Rectangle Conversion
 func visionRectToNormal(_ visionRect: CGRect)->CGRect {
     var newRect = visionRect
