@@ -1,6 +1,11 @@
 import { PropTypes } from "prop-types";
-import { Component } from "react";
-import { NativeModules, requireNativeComponent } from "react-native";
+import React, { Component } from "react";
+import {
+  NativeModules,
+  NativeEventEmitter,
+  requireNativeComponent,
+  ViewPropTypes
+} from "react-native";
 //#region Code for object RHDVisionModule
 const NativeRHDVisionModule = NativeModules.RHDVisionModule;
 const start = async cameraFront => {
@@ -116,32 +121,67 @@ const saveMultiArray = async key => {
   return await NativeRHDVisionModule.saveMultiArray(key);
 };
 //#endregion
+//#region events for object RHDVisionModule
+var _getNativeRHDVisionModuleEventEmitter = null;
+const getNativeRHDVisionModuleEventEmitter = () => {
+  if (!_getNativeRHDVisionModuleEventEmitter)
+    _getNativeRHDVisionModuleEventEmitter = new NativeEventEmitter(
+      NativeRHDVisionModule
+    );
+  return _getNativeRHDVisionModuleEventEmitter;
+};
+const subscribeToRNVision = cb => {
+  return getNativeRHDVisionModuleEventEmitter().addListener("RNVision", cb);
+};
+const subscribeToRNVMetaData = cb => {
+  return getNativeRHDVisionModuleEventEmitter().addListener("RNVMetaData", cb);
+};
+const subscribeToRNVisionImageDim = cb => {
+  return getNativeRHDVisionModuleEventEmitter().addListener(
+    "RNVisionImageDim",
+    cb
+  );
+};
+//#endregion
+//#region constants for object RHDVisionModule
+const bundlePath = NativeRHDVisionModule.bundlePath;
+const bundleURL = NativeRHDVisionModule.bundleURL;
+//#endregion
 const NativeRHDVisionImageView = requireNativeComponent(
   "RHDVisionImageView",
-  SwiftRHDVisionImageView
+  RHDVisionImageView
 );
-class SwiftRHDVisionImageView extends Component {
+class RHDVisionImageView extends Component {
   render() {
-    return <NativeRHDVisionImageView {...props} />;
+    return <NativeRHDVisionImageView {...this.props} />;
   }
 }
-SwiftRHDVisionImageView.propTypes = {
-  isMirrored: PropTypes.boolean,
+RHDVisionImageView.propTypes = {
+  isMirrored: PropTypes.bool,
   resizeMode: PropTypes.string,
-  id: PropTypes.string
+  id: PropTypes.string,
+  ...ViewPropTypes
 };
 const NativeRHDVisionCameraView = requireNativeComponent(
   "RHDVisionCameraView",
-  SwiftRHDVisionCameraView
+  RHDVisionCameraView
 );
-class SwiftRHDVisionCameraView extends Component {
+class RHDVisionCameraView extends Component {
   render() {
-    return <NativeRHDVisionCameraView {...props} />;
+    return <NativeRHDVisionCameraView {...this.props} />;
   }
 }
-SwiftRHDVisionCameraView.propTypes = {
-  gravity: PropTypes.string
+RHDVisionCameraView.propTypes = {
+  gravity: PropTypes.string,
+  ...ViewPropTypes
 };
+//#region Event marshalling object
+const RNSEvents = {
+  RNVision: subscribeToRNVision,
+  RNVMetaData: subscribeToRNVMetaData,
+  RNVisionImageDim: subscribeToRNVisionImageDim
+};
+//#endregion
 //#region Exports
 export {
   start,
@@ -171,7 +211,13 @@ export {
   setRegion,
   removeRegion,
   saveMultiArray,
-  SwiftRHDVisionImageView,
-  SwiftRHDVisionCameraView
+  subscribeToRNVision,
+  subscribeToRNVMetaData,
+  subscribeToRNVisionImageDim,
+  bundlePath,
+  bundleURL,
+  RHDVisionImageView,
+  RHDVisionCameraView,
+  RNSEvents
 };
 //#endregion
