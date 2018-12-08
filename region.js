@@ -181,7 +181,6 @@ class Region extends Component {
           const now = Date.now();
           if (now < parseInt(this.cachedDate[this.props.region + url]) + 50)
             return;
-          console.log("RUNNING SETSTATE!!!!!");
           this.setState(({ classifications }) => {
             return {
               classifications: {
@@ -242,14 +241,10 @@ Region.propTypes = {
 };
 const fixURL = url => {
   //ask if this is a URL
-  console.log("Checking whether this is a url", url, bundleURL);
   if (url.includes("://")) return url;
   if (url.endsWith(".mlmodel")) url = url + "c";
-  if (!url.endsWith(".mlmodelc")) {
-    url = url + ".mlmodelc";
-  }
+  if (!url.endsWith(".mlmodelc")) url = url + ".mlmodelc";
   const final = bundleURL + url;
-  console.log("Returning final", final);
   return final;
 };
 
