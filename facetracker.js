@@ -3,6 +3,7 @@ import { RNVisionProvider, RNVisionConsumer } from "./wrapper";
 import PropTypes from "prop-types";
 
 const intersect = (a, b) => {
+  if (!a && !b) return false;
   return !(
     b.x > a.x + a.width ||
     a.x > b.x + b.width ||
