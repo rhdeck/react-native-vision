@@ -200,7 +200,7 @@ Faces.propTypes = {
   children: PropTypes.func.isRequired
 };
 const FaceCamera = props => (
-  <FacesProvider {...props}>
+  <FacesProvider isStarted={true} isCameraFront={false} {...props}>
     <RNVCameraView {...props}>
       {typeof props.children === "function" ? (
         <Faces>{props.children}</Faces>

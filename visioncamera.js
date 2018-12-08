@@ -3,7 +3,7 @@ import { RNVisionProvider } from "./wrapper";
 import { RNVCameraView } from "./view";
 import { CameraRegion } from "./cameraregion";
 const VisionCamera = props => (
-  <RNVisionProvider {...props}>
+  <RNVisionProvider isStarted={true} isCameraFront={false} {...props}>
     <RNVCameraView {...props}>
       {typeof props.children == "function" ? (
         <CameraRegion
