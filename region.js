@@ -221,6 +221,9 @@ class Region extends Component {
             imageDimensions: value.imageDimensions,
             isCameraFront: value.isCameraFront,
             classifications: this.state.classifications,
+            classification:
+              this.state.classifications &&
+              Object.values(this.state.classifications)[0],
             genericResults: this.state.genericResults
           };
           return this.props.children(regionInfo);
