@@ -3,12 +3,25 @@ const xcode = require("xcode");
 const { join, basename, dirname, isAbsolute } = require("path");
 const { existsSync, renameSync, writeFileSync, unlinkSync } = require("fs");
 const { sync } = require("glob");
+const rp = require("request-promise-native");
 module.exports = [
   {
     name: "add-mlmodel <modelpath>",
     description: "Add and compile mlmodel into your IOS project assets",
-    func: (argv, _, options) => {
-      const tempPath = compileMLModel(argv[0]);
+    func: async (argv, _, options) => {
+      //Is the argument a path or a URL?
+      //URL check
+      let tempPath;
+      if (argv[0].includes("://")) {
+        //URL!
+        //transfer URL to our temp Path
+        const data = await rp(uri);
+        const outFile = join(process.env.TMPDIR, basename(uri));
+        writeFileSync(outFile, data);
+        tempPath = compileMLModel(outFile);
+      } else {
+        tempPath = compileMLModel(argv[0]);
+      }
       const outPath = options.outPath ? options.outPath : ".";
       const finalLocation = join(outPath, basename(tempPath));
       if (tempPath) {
@@ -18,6 +31,13 @@ module.exports = [
         join(process.cwd(), "ios", "**", "project.pbxproj")
       )[0];
       addToProject(finalLocation, projectPath);
+      const base = basename(finalLocation);
+      const parts = base.split(".");
+      parts.pop();
+      const newBase = parts.join(".");
+      console.log(
+        `Model added. You may refer to it as ${newBase} in your code.`
+      );
     }
   }
 ];
