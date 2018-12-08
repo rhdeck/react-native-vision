@@ -13,37 +13,92 @@ react-native link
 
 **Note** `react-native-swift` is a peer dependency of `react-native-vision`.
 
-# Face Recognizer Component Reference
+If you are running on a stock RN deployment (e.g. from `react-native init`) you will need to make sure your app is targeting IOS 11 or higher:
 
-To help get started with interesting tracking, the package includes a face detector subsystem. Example:
+```bash
+yarn add react-native-fix-ios-version
+react-native link
+```
+
+Since this module uses the camera, it will work much better on a device, and setting up permissions and codesigning in advance will help:
+
+```bash
+yarn add -D react-native-camera-ios-enable
+yarn add -D react-native-setdevteam
+react-native link
+react-native setdevteam
+```
+
+Then you are ready to run!
+
+```bash
+react-native run-ios --device
+```
+
+# Command line - adding a Machine Learning Model with `add-mlmodel`
+
+`react-native-vision` makes it easier to bundle a pre-built machine learning model into your app.
+
+After installing, you will find the following command available:
+
+```bash
+react-native add-mlmodel /path/to/mymodel.mlmodel
+```
+
+Provide the model and you will be able to reference it in code (e.g. as classifier, generator, etc) via just the name (in this case `mymodel`)
+
+# Face Recognizer Reference
+
+Taking a page (and the model!) from (https://github.com/gantman/nicornot)[Gant Laborde's NicOrNot app], here is the entirety of an app that discerns whether the target is nicolas cage.
+
+## Setup
+
+```bash
+react-native init nictest; cd nictest
+yarn add react-native-swift react-native-vision
+yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+react-native link
+react-native setdevteam
+
+```
+
+## Load your model with `add-mlmodel`
+
+```bash
+curl https://s3.amazonaws.com/despiteallmyrage/MegaNic50_linear_5.mlmodel > MegaNic50.mlmodel
+react-native add-mlmodel MegaNic50.mlmodel
+```
+
+## App Code
 
 ```javascript
-<FacesProvider isCameraFront={false} classifier={file_url_of_classifier}>
-  <SafeAreaView>
-    <RNVCameraView>
-      <Faces>
-        {({ face, faceConfidence, style }) => (
-          <View
-            style={{
-              ...style,
-              borderColor: "green",
-              borderWidth: 1,
-              backgroundColor: "#FF000030"
-            }}
-          >
-            {face && [
-              <Text key="facelabel">{face}</Text>,
-              <Text key="faceconfidence">
-                {(parseFloat(faceConfidence) * 100.0).toFixed(0) + "%"}
-              </Text>
-            ]}
-          </View>
-        )}
-      </Faces>
-    </RNVCameraView>
-    )
-  </SafeAreaView>
-</FacesProvider>
+import React from "react";
+import { Text, View } from "react-native";
+import { FaceCamera } from "react-native-vision";
+import { Identifier } from "react-native-identifier";
+export default () => (
+  <FaceCamera
+    style={{ flex: 1 }}
+    isStarted={true}
+    isCameraFront={false}
+    classifier="MegaNic50"
+  >
+    {({ face, faceConfidence, style }) =>
+      face &&
+      (face == "nic" ? (
+        <Identifier style={{ ...style }} accuracy={faceConfidence} />
+      ) : (
+        <View
+          style={{ ...style, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 50, color: "red", opacity: faceConfidence }}>
+            X
+          </Text>
+        </View>
+      ))
+    }
+  </FaceCamera>
+);
 ```
 
 ## FacesProvider
