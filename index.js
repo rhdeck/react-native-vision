@@ -14,6 +14,7 @@ import {
   Faces,
   FaceCamera
 } from "./faceprovider";
+import { VisionCamera } from "./simpleml";
 export {
   RNVCameraView,
   Delegate,
@@ -29,5 +30,6 @@ export {
   FacesConsumer,
   Face,
   Faces,
-  FaceCamera
+  FaceCamera,
+  VisionCamera
 };
