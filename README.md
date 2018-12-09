@@ -83,7 +83,7 @@ import { Text } from "react-native";
 import { VisionCamera } from "react-native-vision";
 export default () => (
   <VisionCamera style={{ flex: 1 }} classifier="MobileNet">
-    {({ classification: [{ label, confidence } = {}] = [] }) => (
+    {({ label, confidence }) => (
       <Text
         style={{ fontSize: 50, position: "absolute", right: 50, bottom: 100 }}
       >

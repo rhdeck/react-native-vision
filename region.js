@@ -231,14 +231,16 @@ class Region extends Component {
               this.state.classifications &&
               Object.values(this.state.classifications)[0],
             label:
-              this.state.classifications && this.state.classifications[0].label,
+              this.state.classifications &&
+              Object.values(this.state.classifications)[0] &&
+              Object.values(this.state.classifications)[0][0].label,
             confidence:
               this.state.classifications &&
-              this.state.classifications[0].confidence,
+              Object.values(this.state.classifications)[0] &&
+              Object.values(this.state.classifications)[0][0].confidence,
             genericResults: this.state.genericResults
           };
-          return;
-          this.props.children(regionInfo);
+          return this.props.children(regionInfo);
         }}
       </RNVisionConsumer>
     ) : (
