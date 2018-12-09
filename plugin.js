@@ -15,8 +15,8 @@ module.exports = [
       if (argv[0].includes("://")) {
         //URL!
         //transfer URL to our temp Path
-        const data = await rp(uri);
-        const outFile = join(process.env.TMPDIR, basename(uri));
+        const data = await rp(argv[0]);
+        const outFile = join(process.env.TMPDIR, basename(argv[0]));
         writeFileSync(outFile, data);
         tempPath = compileMLModel(outFile);
       } else {
