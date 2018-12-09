@@ -35,6 +35,7 @@ class Region extends Component {
       if (nextProps.classifiers)
         if (Array.isArray(nextProps.classifiers))
           nextProps.classifiers
+            .filter(({ url }) => Boolean)
             .map(o => ({ ...o, url: fixURL(o.url) }))
             .forEach(obj => {
               const { url, max: maxCount } = obj;
@@ -58,7 +59,11 @@ class Region extends Component {
             )
               return;
             if (!ret.todos.addMLClassifiers) ret.todos.addMLClassifiers = [];
-            ret.todos.addMLClassifiers.push({ url: fixURL(k), max: maxCount });
+            if (k)
+              ret.todos.addMLClassifiers.push({
+                url: fixURL(k),
+                max: maxCount
+              });
           });
       if (prevState.classifiers)
         if (Array.isArray(prevState.classifiers))
@@ -101,6 +106,7 @@ class Region extends Component {
               )
                 return;
               if (!ret.todos.addMLGenerators) ret.todos.addMLGenerators = [];
+              console.log("Adding a generator!!!!", obj);
               ret.todos.addMLGenerators.push(obj);
             });
       if (prevState.generators)
@@ -244,6 +250,9 @@ Region.propTypes = {
 };
 const fixURL = url => {
   //ask if this is a URL
+  if (!url) {
+    throw "Bad URL PASSED! I AM SAD";
+  }
   if (url.includes("://")) return url;
   if (url.endsWith(".mlmodel")) url = url + "c";
   if (!url.endsWith(".mlmodelc")) url = url + ".mlmodelc";
@@ -253,4 +262,4 @@ const fixURL = url => {
 
 const RNVDefaultRegion = props => <Region {...props} region="" />;
 export default Region;
-export { Region as RNVRegion, RNVDefaultRegion };
+export { Region as RNVRegion, RNVDefaultRegion, fixURL };
