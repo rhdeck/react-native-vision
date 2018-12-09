@@ -53,7 +53,9 @@ react-native add-mlmodel https://docs-assets.developer.apple.com/coreml/models/M
 
 Note that the name of your model in the code will be the same as the filename minus the "mlmodel". In the above case, the model in code can be referenced as "MobileNet"
 
-# Full Frame Object Detection reference
+# Easy Start 1 : Full Frame Object Detection
+
+One of the most common easy use cases is just detecting what is in front of you. For this we use the `VisionCamera` component that lets you apply a model and get the classification via render props.
 
 ## Setup
 
@@ -92,7 +94,56 @@ export default () => (
 );
 ```
 
-# Face Recognizer Reference
+# Easy Start 2: GeneratorView - for Style Transfer
+
+Most machine learning application are classifiers. But generators can be useful and a lot of fun. The `GeneratorView` lets you look at style transfer models that show how you can use deep learning techniques for creating whole new experiences.
+
+## Setup
+
+```bash
+react-native init styletest; cd styletest
+yarn add react-native-swift react-native-vision
+yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+react-native link
+react-native setdevteam
+```
+
+## Load your model with `add-mlmodel`
+
+Apple has not published a style transfer model, but there are a few locations on the web where you can download them. Here is one: https://github.com/mdramos/fast-style-transfer-coreml
+
+So go to his github, navigate to his google drive, and then download the `la_muse` model to your personal Downloads directory.
+
+```bash
+react-native add-mlmodel ~/Downloads/la_muse.mlmodel
+```
+
+## App Code
+
+This is the insanely short part. Note that the camera view is not necessary for viewing the style-transferred view: its just for reference.
+
+```javascript
+import React from "react";
+import { GeneratorView, RNVCameraView } from "react-native-vision";
+export default () => (
+  <GeneratorView generator="FNS-The-Scream" style={{ flex: 1 }}>
+    <RNVCameraView
+      style={{
+        position: "absolute",
+        height: 200,
+        width: 100,
+        top: 0,
+        right: 0
+      }}
+      resizeMode="center"
+    />
+  </GeneratorView>
+);
+```
+
+# Easy Start 3: Face Camera
+
+Detect what faces are where in your camera view!
 
 Taking a page (and the model!) from (https://github.com/gantman/nicornot)[Gant Laborde's NicOrNot app], here is the entirety of an app that discerns whether the target is nicolas cage.
 
@@ -139,52 +190,7 @@ export default () => (
 );
 ```
 
-# GeneratorView - for Style Transfer
-
-Most machine learning application are classifiers But generators can be useful and a lot of fun. The `GeneratorView` lets you look at style transfer models that show how you can use deep learning techniques for creating whole new experiences.
-
-## Setup
-
-```bash
-react-native init styletest; cd styletest
-yarn add react-native-swift react-native-vision
-yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
-react-native link
-react-native setdevteam
-```
-
-## Load your model with `add-mlmodel`
-
-Apple has not published a style transfer model, but there are a few locations on the web where you can download them. Here is one: https://github.com/mdramos/fast-style-transfer-coreml
-
-So go to his github, navigate to his google drive, and then download the `la_muse` model to your personal Downloads directory.
-
-```bash
-react-native add-mlmodel ~/Downloads/la_muse.mlmodel
-```
-
-## App Code
-
-This is the insanely short part. Note that the camera view is not necessary for viewing the style-transferred view: its just for reference.
-
-```javascript
-import React from "react";
-import { GeneratorView, RNVCameraView } from "react-native-vision";
-export default () => (
-  <GeneratorView generator="FNS-The-Scream" style={{ flex: 1 }}>
-    <RNVCameraView
-      style={{
-        position: "absolute",
-        height: 200,
-        width: 100,
-        top: 0,
-        right: 0
-      }}
-      resizeMode="center"
-    />
-  </GeneratorView>
-);
-```
+# Face Detection Component Reference
 
 ## FacesProvider
 
