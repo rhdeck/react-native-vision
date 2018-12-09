@@ -217,7 +217,7 @@ class Region extends Component {
     });
   }
   render() {
-    return this.props.children ? (
+    return typeof this.props.children == "function" ? (
       <RNVisionConsumer>
         {value => {
           if (!value) return;
@@ -232,10 +232,13 @@ class Region extends Component {
               Object.values(this.state.classifications)[0],
             genericResults: this.state.genericResults
           };
-          return this.props.children(regionInfo);
+          return;
+          this.props.children(regionInfo);
         }}
       </RNVisionConsumer>
-    ) : null;
+    ) : (
+      this.props.children && this.props.children
+    );
   }
 }
 Region.propTypes = {
@@ -244,7 +247,7 @@ Region.propTypes = {
   generators: PropTypes.array,
   generics: PropTypes.array,
   bottlenecks: PropTypes.object,
-  children: PropTypes.func,
+  // children: PropTypes.func,
   onFrameCaptured: PropTypes.func,
   frameDisposition: PropTypes.string
 };
