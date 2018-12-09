@@ -367,10 +367,12 @@ class RHDVisionModule: RCTEventEmitter, AVCaptureVideoDataOutputSampleBufferDele
                         }
                     case "view":
                         //do nothing
-                        if let v = RHDVisionImageViewManager.instance?.views[thisURL], let ui = CVPtoUIImage(pbo.pixelBuffer) {
-                            DispatchQueue.main.async() {
-                                v.image = ui
-                            }
+                        guard let v = RHDVisionImageViewManager.instance?.views[thisURL] else { continue; }
+                        if !v.shouldUpdateImage() { continue }
+                        //Let's ask some questions about pbo
+                        guard let ui = CVPtoUIImage(pbo.pixelBuffer) else { continue }
+                        DispatchQueue.main.async() {
+                            v.addImage(ui)
                         }
                     default:
                         NSLog("Unhandled generator handler key: " + handler)
@@ -793,5 +795,6 @@ func CVPtoUIImage(_ cvp: CVPixelBuffer) -> UIImage? {
     let ci = CIImage(cvPixelBuffer: cvp)
     let tc = CIContext(options: nil)
     guard let cg = tc.createCGImage(ci, from: CGRect(x: 0, y: 0, width: w, height: h))  else { return nil}
-    return UIImage(cgImage: cg)
+    let temp = UIImage(cgImage: cg)
+    return temp
 }

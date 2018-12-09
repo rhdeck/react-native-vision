@@ -32,6 +32,25 @@ class RHDVisionImageView: UIView {
         super.layoutSubviews()
         imageView.frame = bounds
     }
+    var _interval:Double = 0.25
+    @objc var interval:Double {
+        get { return _interval}
+        set(d) { _interval = d }
+    }
+    var lastAddMS = Date(timeIntervalSinceNow: 0)
+    func shouldUpdateImage() -> Bool {
+        return lastAddMS.timeIntervalSinceNow < 0
+    }
+    func addImage(_ i:UIImage) {
+        //SLOW DOWN!!!!
+        if shouldUpdateImage() {
+            image = i
+            lastAddMS = Date(timeIntervalSinceNow: _interval)
+            print("addImage: RESET")
+        } else {
+            print("addImage: SKIPPING")
+        }
+    }
 }
 func resizeModeToContentMode(_ resizeMode: String) -> UIViewContentMode {
     switch resizeMode {

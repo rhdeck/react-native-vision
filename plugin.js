@@ -60,7 +60,7 @@ module.exports = [
 const compileMLModel = (originPath, destinationPath = process.env.TMPDIR) => {
   const result = join(destinationPath, basename(originPath) + "c");
   try {
-    unlinkSync(result);
+    if (existsSync(result)) unlinkSync(result);
   } catch (e) {}
   spawnSync(
     "xcrun",

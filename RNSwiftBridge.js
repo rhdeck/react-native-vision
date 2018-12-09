@@ -160,6 +160,7 @@ RHDVisionImageView.propTypes = {
   isMirrored: PropTypes.bool,
   resizeMode: PropTypes.string,
   id: PropTypes.string,
+  interval: PropTypes.number,
   ...ViewPropTypes
 };
 const NativeRHDVisionCameraView = requireNativeComponent(

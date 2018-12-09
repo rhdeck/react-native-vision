@@ -34,6 +34,7 @@ RCT_EXTERN_METHOD(saveMultiArraykey:(NSString *)key resolve:(RCTPromiseResolveBl
 RCT_EXPORT_VIEW_PROPERTY(isMirrored, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(resizeMode, NSString *);
 RCT_EXPORT_VIEW_PROPERTY(id, NSString *);
+RCT_EXPORT_VIEW_PROPERTY(interval, double);
 @end
 @interface RCT_EXTERN_MODULE(RHDVisionCameraViewManager, RCTViewManager)
 RCT_EXPORT_VIEW_PROPERTY(gravity, NSString *);
