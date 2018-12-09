@@ -15,6 +15,7 @@ import {
   FaceCamera
 } from "./faceprovider";
 import { VisionCamera } from "./visioncamera";
+import { StyleView } from "./styleview";
 export {
   RNVCameraView,
   Delegate,
@@ -31,5 +32,6 @@ export {
   Face,
   Faces,
   FaceCamera,
-  VisionCamera
+  VisionCamera,
+  StyleView as GeneratorView
 };
