@@ -18,23 +18,6 @@ module.exports = [
       //Is the argument a path or a URL?
       //URL check
       let tempPath;
-      if (argv[0].includes("://")) {
-        //URL!
-        //transfer URL to our temp Path
-        console.log(
-          "I was passed a URL - attempting download. Big models can take a little time"
-        );
-        const outFile = join(process.env.TMPDIR, basename(argv[0]));
-        request(argv[0])
-          .pipe(createWriteStream(outFile))
-          .on("finish", () => {
-            tempPath = compileMLModel(outFile);
-            finish(tempPath);
-          });
-      } else {
-        tempPath = compileMLModel(argv[0]);
-        finish(tempPath);
-      }
       const finish = tempPath => {
         const outPath = options.outPath ? options.outPath : ".";
         const finalLocation = join(outPath, basename(tempPath));
@@ -53,6 +36,24 @@ module.exports = [
           `Model added. You may refer to it as ${newBase} in your code.`
         );
       };
+
+      if (argv[0].includes("://")) {
+        //URL!
+        //transfer URL to our temp Path
+        console.log(
+          "I was passed a URL - attempting download. Big models can take a little time"
+        );
+        const outFile = join(process.env.TMPDIR, basename(argv[0]));
+        request(argv[0])
+          .pipe(createWriteStream(outFile))
+          .on("finish", () => {
+            tempPath = compileMLModel(outFile);
+            finish(tempPath);
+          });
+      } else {
+        tempPath = compileMLModel(argv[0]);
+        finish(tempPath);
+      }
     }
   }
 ];
