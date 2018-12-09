@@ -10,6 +10,7 @@ const {
 } = require("fs");
 const { sync } = require("glob");
 const request = require("request");
+const rimraf = require("rimraf");
 module.exports = [
   {
     name: "add-mlmodel <modelpath>",
@@ -60,7 +61,7 @@ module.exports = [
 const compileMLModel = (originPath, destinationPath = process.env.TMPDIR) => {
   const result = join(destinationPath, basename(originPath) + "c");
   try {
-    if (existsSync(result)) unlinkSync(result);
+    if (existsSync(result)) rimraf.sync(result);
   } catch (e) {}
   spawnSync(
     "xcrun",
