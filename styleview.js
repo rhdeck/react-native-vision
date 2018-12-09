@@ -11,7 +11,7 @@ const StyleView = props => {
         {...props}
         generators={props.generator && [{ url: generatorURL, type: "view" }]}
       />
-      <RNVImageView {...props} id={generatorURL} />
+      <RNVImageView {...props} style={{ ...props.style }} id={generatorURL} />
     </RNVisionProvider>
   );
 };
