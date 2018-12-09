@@ -45,7 +45,17 @@ After installing, you will find the following command available:
 react-native add-mlmodel /path/to/mymodel.mlmodel
 ```
 
-Provide the model and you will be able to reference it in code (e.g. as classifier, generator, etc) via just the name (in this case `mymodel`)
+You may also refere to the model from a URL, which is handy when getting something off the interwebs. For example, to apply the pre-built mobileNet model from apple, you can:
+
+```bash
+react-native add-mlmodel https://docs-assets.developer.apple.com/coreml/models/MobileNet.mlmodel
+```
+
+Note that the name of your model in the code will be the same as the filename minus the "mlmodel". In the above case, the model in code can be referenced as "MobileNet"
+
+# Full Frame Object Drection reference
+
+Make your life easier by
 
 # Face Recognizer Reference
 
@@ -59,14 +69,12 @@ yarn add react-native-swift react-native-vision
 yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
 react-native link
 react-native setdevteam
-
 ```
 
 ## Load your model with `add-mlmodel`
 
 ```bash
-curl https://s3.amazonaws.com/despiteallmyrage/MegaNic50_linear_5.mlmodel > MegaNic50.mlmodel
-react-native add-mlmodel MegaNic50.mlmodel
+react-native add-mlmodel https://s3.amazonaws.com/despiteallmyrage/MegaNic50_linear_5.mlmodel
 ```
 
 ## App Code

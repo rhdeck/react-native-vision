@@ -1,9 +1,15 @@
 const { spawnSync } = require("child_process");
 const xcode = require("xcode");
 const { join, basename, dirname, isAbsolute } = require("path");
-const { existsSync, renameSync, writeFileSync, unlinkSync } = require("fs");
+const {
+  existsSync,
+  renameSync,
+  writeFileSync,
+  unlinkSync,
+  createWriteStream
+} = require("fs");
 const { sync } = require("glob");
-const rp = require("request-promise-native");
+const request = require("request");
 module.exports = [
   {
     name: "add-mlmodel <modelpath>",
@@ -15,29 +21,38 @@ module.exports = [
       if (argv[0].includes("://")) {
         //URL!
         //transfer URL to our temp Path
-        const data = await rp(argv[0]);
+        console.log(
+          "I was passed a URL - attempting download. Big models can take a little time"
+        );
         const outFile = join(process.env.TMPDIR, basename(argv[0]));
-        writeFileSync(outFile, data);
-        tempPath = compileMLModel(outFile);
+        request(argv[0])
+          .pipe(createWriteStream(outFile))
+          .on("finish", () => {
+            tempPath = compileMLModel(outFile);
+            finish(tempPath);
+          });
       } else {
         tempPath = compileMLModel(argv[0]);
+        finish(tempPath);
       }
-      const outPath = options.outPath ? options.outPath : ".";
-      const finalLocation = join(outPath, basename(tempPath));
-      if (tempPath) {
-        renameSync(tempPath, finalLocation);
-      }
-      const projectPath = sync(
-        join(process.cwd(), "ios", "**", "project.pbxproj")
-      )[0];
-      addToProject(finalLocation, projectPath);
-      const base = basename(finalLocation);
-      const parts = base.split(".");
-      parts.pop();
-      const newBase = parts.join(".");
-      console.log(
-        `Model added. You may refer to it as ${newBase} in your code.`
-      );
+      const finish = tempPath => {
+        const outPath = options.outPath ? options.outPath : ".";
+        const finalLocation = join(outPath, basename(tempPath));
+        if (tempPath) {
+          renameSync(tempPath, finalLocation);
+        }
+        const projectPath = sync(
+          join(process.cwd(), "ios", "**", "project.pbxproj")
+        )[0];
+        addToProject(finalLocation, projectPath);
+        const base = basename(finalLocation);
+        const parts = base.split(".");
+        parts.pop();
+        const newBase = parts.join(".");
+        console.log(
+          `Model added. You may refer to it as ${newBase} in your code.`
+        );
+      };
     }
   }
 ];
