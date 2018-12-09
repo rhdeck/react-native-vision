@@ -157,23 +157,32 @@ react-native setdevteam
 
 Apple has not published a style transfer model, but there are a few locations on the web where you can download them. Here is one: https://github.com/mdramos/fast-style-transfer-coreml
 
-So go to his github, navigate to his google drive, and then download the `la-muse` model to your personal Downloads directory.
+So go to his github, navigate to his google drive, and then download the `la_muse` model to your personal Downloads directory.
 
 ```bash
-react-native add-mlmodel ~/Downloads/la-muse.mlmodel
+react-native add-mlmodel ~/Downloads/la_muse.mlmodel
 ```
-
-**Note**: The downloaded model has a dash, but that is not OK in the apple file structure, so it gets renamed to `la_muse`.
 
 ## App Code
 
-This is the insanely short part.
+This is the insanely short part. Note that the camera view is not necessary for viewing the style-transferred view: its just for reference.
 
 ```javascript
 import React from "react";
-import { StyleView } from "react-native-vision";
+import { GeneratorView, RNVCameraView } from "react-native-vision";
 export default () => (
-  <StyleView generator="la_muse" style={{ height: 100, width: 100 }} />
+  <GeneratorView generator="FNS-The-Scream" style={{ flex: 1 }}>
+    <RNVCameraView
+      style={{
+        position: "absolute",
+        height: 200,
+        width: 100,
+        top: 0,
+        right: 0
+      }}
+      resizeMode="center"
+    />
+  </GeneratorView>
 );
 ```
 
