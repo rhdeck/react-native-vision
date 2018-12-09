@@ -89,7 +89,7 @@ export default () => (
     style={{ flex: 1 }}
     isStarted={true}
     isCameraFront={false}
-    classifier="MegaNic50"
+    classifier="MegaNic50_linear_5"
   >
     {({ face, faceConfidence, style }) =>
       face &&
