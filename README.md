@@ -62,7 +62,7 @@ One of the most common easy use cases is just detecting what is in front of you.
 ```bash
 react-native init imagedetector; cd imagedetector
 yarn add react-native-swift react-native-vision
-yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+yarn add react-native-fix-ios-version react-native-camera-ios-enable react-native-setdevteam
 react-native link
 react-native setdevteam
 ```
@@ -85,7 +85,13 @@ export default () => (
   <VisionCamera style={{ flex: 1 }} classifier="MobileNet">
     {({ label, confidence }) => (
       <Text
-        style={{ fontSize: 50, position: "absolute", right: 50, bottom: 100 }}
+        style={{
+          width: "75%",
+          fontSize: 50,
+          position: "absolute",
+          right: 50,
+          bottom: 100
+        }}
       >
         {label + " :" + (confidence * 100).toFixed(0) + "%"}
       </Text>
@@ -103,7 +109,7 @@ Most machine learning application are classifiers. But generators can be useful 
 ```bash
 react-native init styletest; cd styletest
 yarn add react-native-swift react-native-vision
-yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+yarn add react-native-fix-ios-version react-native-camera-ios-enable react-native-setdevteam
 react-native link
 react-native setdevteam
 ```
@@ -152,7 +158,7 @@ Taking a page (and the model!) from (https://github.com/gantman/nicornot)[Gant L
 ```bash
 react-native init nictest; cd nictest
 yarn add react-native-swift react-native-vision
-yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+yarn add react-native-fix-ios-version react-native-camera-ios-enable react-native-setdevteam
 react-native link
 react-native setdevteam
 ```
