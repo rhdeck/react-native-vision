@@ -1,11 +1,10 @@
 const { spawnSync } = require("child_process");
 const xcode = require("xcode");
-const { join, basename, dirname, isAbsolute } = require("path");
+const { join, basename, isAbsolute } = require("path");
 const {
   existsSync,
   renameSync,
   writeFileSync,
-  unlinkSync,
   createWriteStream
 } = require("fs");
 const { sync } = require("glob");
@@ -18,7 +17,14 @@ module.exports = [
     func: async (argv, _, options) => {
       let tempPath;
       const outPath = options.outPath ? options.outPath : ".";
-      const finalLocation = join(outPath, basename(argv[0]));
+      const finalLocation = join(outPath, basename(argv[0]) + "c");
+      const projectPath = sync(
+        join(process.cwd(), "ios", "**", "project.pbxproj")
+      )[0];
+      if (!projectPath) {
+        console.error("Cannot find an XCode project to modify: aborting");
+        return;
+      }
       if (existsSync(finalLocation)) {
         console.log(
           "Aborting compile: The mlmodelc directory already exists at ",
@@ -38,9 +44,6 @@ module.exports = [
         if (tempPath) {
           renameSync(tempPath, finalLocation);
         }
-        const projectPath = sync(
-          join(process.cwd(), "ios", "**", "project.pbxproj")
-        )[0];
         addToProject(finalLocation, projectPath);
         const base = basename(finalLocation);
         const parts = base.split(".");
@@ -91,6 +94,9 @@ const addToProject = (fileToAdd, projectPath) => {
   const project = xcode.project(projectPath);
   project.parseSync();
   console.log("Adding file ", fileToAdd);
+  try {
+    project.removeResourceFile(fileToAdd);
+  } catch (e) {}
   project.addResourceFile(fileToAdd, {
     target: project.getFirstTarget().uuid,
     lastKnownFileType: "folder"
