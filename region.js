@@ -230,6 +230,11 @@ class Region extends Component {
             classification:
               this.state.classifications &&
               Object.values(this.state.classifications)[0],
+            label:
+              this.state.classifications && this.state.classifications[0].label,
+            confidence:
+              this.state.classifications &&
+              this.state.classifications[0].confidence,
             genericResults: this.state.genericResults
           };
           return;
