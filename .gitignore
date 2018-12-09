@@ -62,3 +62,4 @@ typings/
 ios/RHDVision.xcodeproj/xcuserdata/ray.xcuserdatad/xcschemes/xcschememanagement.plist
 *.lock
 .vscode/settings.json
+.watchmanconfig
