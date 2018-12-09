@@ -31,7 +31,7 @@ module.exports = [
         const base = basename(finalLocation);
         const parts = base.split(".");
         parts.pop();
-        const newBase = parts.join(".").replace("-", "_");
+        const newBase = parts.join("."); //.replace("-", "_");
         console.log(
           `Model added. You may refer to it as ${newBase} in your code.`
         );
