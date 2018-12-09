@@ -14,7 +14,7 @@ import {
   Faces,
   FaceCamera
 } from "./faceprovider";
-import { VisionCamera } from "./simpleml";
+import { VisionCamera } from "./visioncamera";
 export {
   RNVCameraView,
   Delegate,
