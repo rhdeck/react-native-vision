@@ -53,7 +53,7 @@ react-native add-mlmodel https://docs-assets.developer.apple.com/coreml/models/M
 
 Note that the name of your model in the code will be the same as the filename minus the "mlmodel". In the above case, the model in code can be referenced as "MobileNet"
 
-# Full Frame Object Drection reference
+# Full Frame Object Detection reference
 
 ## Setup
 
