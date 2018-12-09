@@ -55,7 +55,42 @@ Note that the name of your model in the code will be the same as the filename mi
 
 # Full Frame Object Drection reference
 
-Make your life easier by
+## Setup
+
+```bash
+react-native init imagedetector; cd imagedetector
+yarn add react-native-swift react-native-vision
+yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+react-native link
+react-native setdevteam
+```
+
+## Load your model with MobileNet
+
+A free download from Apple!
+
+```bash
+react-native add-mlmodel https://docs-assets.developer.apple.com/coreml/models/MobileNet.mlmodel
+```
+
+## Add Some App Code
+
+```javascript
+import React from "react";
+import { Text } from "react-native";
+import { VisionCamera } from "react-native-vision";
+export default () => (
+  <VisionCamera style={{ flex: 1 }} classifier="MobileNet">
+    {({ classification: [{ label, confidence } = {}] = [] }) => (
+      <Text
+        style={{ fontSize: 50, position: "absolute", right: 50, bottom: 100 }}
+      >
+        {label + " :" + (confidence * 100).toFixed(0) + "%"}
+      </Text>
+    )}
+  </VisionCamera>
+);
+```
 
 # Face Recognizer Reference
 
@@ -85,12 +120,7 @@ import { Text, View } from "react-native";
 import { FaceCamera } from "react-native-vision";
 import { Identifier } from "react-native-identifier";
 export default () => (
-  <FaceCamera
-    style={{ flex: 1 }}
-    isStarted={true}
-    isCameraFront={false}
-    classifier="MegaNic50_linear_5"
-  >
+  <FaceCamera style={{ flex: 1 }} classifier="MegaNic50_linear_5">
     {({ face, faceConfidence, style }) =>
       face &&
       (face == "nic" ? (
@@ -106,6 +136,44 @@ export default () => (
       ))
     }
   </FaceCamera>
+);
+```
+
+# GeneratorView - for Style Transfer
+
+Most machine learning application are classifiers But generators can be useful and a lot of fun. The `GeneratorView` lets you look at style transfer models that show how you can use deep learning techniques for creating whole new experiences.
+
+## Setup
+
+```bash
+react-native init styletest; cd styletest
+yarn add react-native-swift react-native-vision
+yarn add react-native fix-ios-version react-native-camera-ios-enable react-native-setdevteam
+react-native link
+react-native setdevteam
+```
+
+## Load your model with `add-mlmodel`
+
+Apple has not published a style transfer model, but there are a few locations on the web where you can download them. Here is one: https://github.com/mdramos/fast-style-transfer-coreml
+
+So go to his github, navigate to his google drive, and then download the `la-muse` model to your personal Downloads directory.
+
+```bash
+react-native add-mlmodel ~/Downloads/la-muse.mlmodel
+```
+
+**Note**: The downloaded model has a dash, but that is not OK in the apple file structure, so it gets renamed to `la_muse`.
+
+## App Code
+
+This is the insanely short part.
+
+```javascript
+import React from "react";
+import { StyleView } from "react-native-vision";
+export default () => (
+  <StyleView generator="la_muse" style={{ height: 100, width: 100 }} />
 );
 ```
 
