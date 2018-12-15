@@ -1,5 +1,5 @@
 const { spawnSync } = require("child_process");
-const xcode = require("xcode");
+const xcode = require("@raydeck/xcode");
 const { join, basename, isAbsolute } = require("path");
 const {
   existsSync,
